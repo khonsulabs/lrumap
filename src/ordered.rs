@@ -89,16 +89,28 @@ where
 
 impl<Key, Value> LruMap<Key, Value> for LruBTreeMap<Key, Value>
 where
-    Key: Ord + Eq + Hash + Clone,
+    Key: Ord + Clone,
 {
     fn new(capacity: usize) -> Self {
         Self::new(capacity)
     }
 
+    fn head(&mut self) -> Option<EntryRef<'_, Key, Value>> {
+        self.cache
+            .head()
+            .map(|node| EntryRef::new(&mut self.cache, node))
+    }
+
+    fn tail(&mut self) -> Option<EntryRef<'_, Key, Value>> {
+        self.cache
+            .tail()
+            .map(|node| EntryRef::new(&mut self.cache, node))
+    }
+
     fn get<QueryKey>(&mut self, key: &QueryKey) -> Option<&Value>
     where
         QueryKey: Ord + Hash + Eq + ?Sized,
-        Key: Borrow<QueryKey>,
+        Key: Borrow<QueryKey> + Ord + Eq + Hash,
     {
         self.get(key)
     }
@@ -106,7 +118,7 @@ where
     fn get_without_update<QueryKey>(&self, key: &QueryKey) -> Option<&Value>
     where
         QueryKey: Ord + Hash + Eq + ?Sized,
-        Key: Borrow<QueryKey>,
+        Key: Borrow<QueryKey> + Ord + Eq + Hash,
     {
         self.get_without_update(key)
     }
@@ -114,12 +126,16 @@ where
     fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Key, Value>>
     where
         QueryKey: Ord + Hash + Eq + ?Sized,
-        Key: Borrow<QueryKey>,
+        Key: Borrow<QueryKey> + Ord + Eq + Hash,
     {
         self.entry(key)
     }
 
     fn push(&mut self, key: Key, value: Value) -> Option<Removed<Key, Value>> {
         self.push(key, value)
+    }
+
+    fn len(&self) -> usize {
+        self.cache.len()
     }
 }

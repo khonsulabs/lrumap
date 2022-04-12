@@ -9,11 +9,11 @@ name = "suite"
 harness = false
 
 [features]
-hashbrown = ["ordered-lru/hashbrown", "lru/hashbrown"]
+hashbrown = ["lrumap/hashbrown", "lru/hashbrown"]
 
 [dependencies]
 lru = { version = "0.7.5", default-features = false }
-ordered-lru = { path = "../" }
+lrumap = { path = "../" }
 
 [dev-dependencies]
 criterion = { version = "0.3", features = ["html_reports"] }

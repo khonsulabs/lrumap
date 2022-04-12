@@ -12,7 +12,7 @@ pub fn benchmark(c: &mut Criterion) {
     }
 
     group.bench_function("ordered-lru", |b| {
-        let mut lru = ordered_lru::LruBTreeMap::new(1000);
+        let mut lru = lrumap::LruBTreeMap::new(1000);
         b.iter_batched(
             || entries.clone(),
             |batch: Vec<u32>| {
@@ -25,7 +25,7 @@ pub fn benchmark(c: &mut Criterion) {
     });
 
     group.bench_function("hashed-lru", |b| {
-        let mut lru = ordered_lru::LruHashMap::new(1000);
+        let mut lru = lrumap::LruHashMap::new(1000);
         b.iter_batched(
             || entries.clone(),
             |batch: Vec<u32>| {

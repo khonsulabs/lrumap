@@ -21,6 +21,22 @@ impl<Key, Value> LruCache<Key, Value> {
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.length
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.length == 0
+    }
+
+    pub fn head(&self) -> Option<u32> {
+        self.head
+    }
+
+    pub fn tail(&self) -> Option<u32> {
+        self.tail
+    }
+
     pub fn get(&mut self, node: u32) -> &Node<Key, Value> {
         self.move_node_to_front(node);
         &self.nodes[node as usize]
@@ -301,6 +317,10 @@ impl<'a, Key, Value> EntryRef<'a, Key, Value> {
         }
     }
 
+    pub fn id(&self) -> u32 {
+        self.node
+    }
+
     pub fn key(&self) -> &Key {
         self.cache.nodes[self.node as usize].key().unwrap()
     }
@@ -321,6 +341,26 @@ impl<'a, Key, Value> EntryRef<'a, Key, Value> {
         self.cache
             .sequence
             .wrapping_sub(self.cache.nodes[self.node as usize].last_accessed)
+    }
+
+    pub fn move_next(&mut self) -> bool {
+        if let Some(next) = self.cache.nodes[self.node as usize].next {
+            self.node = next;
+            self.accessed = false;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn move_previous(&mut self) -> bool {
+        if let Some(previous) = self.cache.nodes[self.node as usize].previous {
+            self.node = previous;
+            self.accessed = false;
+            true
+        } else {
+            false
+        }
     }
 }
 
