@@ -98,3 +98,52 @@ fn hash_iteration() {
 fn btree_iteration() {
     iteration_tests::<LruBTreeMap<_, _>>();
 }
+
+fn entry_removal_tests<Map>()
+where
+    Map: LruMap<u32, u32> + Debug,
+{
+    let mut lru = Map::new(3);
+    lru.push(1, 1);
+    lru.push(2, 2);
+    lru.push(3, 3);
+    let entry = lru.head().unwrap();
+    // Remove 3, no previous, should return None.
+    assert!(entry.remove_moving_previous().is_none());
+    assert!(lru.get(&3).is_none());
+    let entry = lru.tail().unwrap();
+    // Remove 1, no next, should return None.
+    assert!(entry.remove_moving_next().is_none());
+    assert!(lru.get(&1).is_none());
+    let (key, _value) = lru.head().unwrap().take();
+    assert!(lru.get(&2).is_none());
+    assert_eq!(key, 2);
+    assert!(lru.head().is_none());
+    assert!(lru.tail().is_none());
+
+    // Start fresh and test deleting the other directions
+    lru.push(1, 1);
+    lru.push(2, 2);
+    lru.push(3, 3);
+    // Remove 3, moving next, should end up on 2
+    let mut entry = lru.head().unwrap();
+    entry = entry.remove_moving_next().unwrap();
+    assert_eq!(entry.key(), &2);
+    // Remove 2, moving previous, should end up on 2
+    let mut entry = lru.tail().unwrap();
+    entry = entry.remove_moving_previous().unwrap();
+    let (key, _value) = entry.take();
+    assert_eq!(key, 2);
+    assert!(lru.head().is_none());
+    assert!(lru.tail().is_none());
+}
+
+#[test]
+fn hash_entry_removal() {
+    entry_removal_tests::<LruHashMap<_, _>>();
+}
+
+#[test]
+fn btree_entry_removal() {
+    entry_removal_tests::<LruBTreeMap<_, _>>();
+}

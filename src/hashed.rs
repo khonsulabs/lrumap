@@ -13,7 +13,7 @@ use hashbrown::{
 };
 
 use crate::{
-    lru::{EntryRef, LruCache, Removed},
+    lru::{EntryCache, EntryRef, LruCache, NodeId, Removed},
     LruMap,
 };
 
@@ -27,7 +27,7 @@ use crate::{
 #[derive(Debug)]
 #[must_use]
 pub struct LruHashMap<Key, Value, State = DefaultState> {
-    map: HashMap<Key, u32, State>,
+    map: HashMap<Key, NodeId, State>,
     cache: LruCache<Key, Value>,
 }
 
@@ -98,7 +98,7 @@ where
     /// This function does not touch the key, preserving its current position in
     /// the lru cache. The [`EntryRef`] can touch the key, depending on which
     /// functions are used.
-    pub fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Key, Value>>
+    pub fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Self, Key, Value>>
     where
         QueryKey: Hash + Eq + ?Sized,
         Key: Borrow<QueryKey>,
@@ -106,7 +106,7 @@ where
         self.map
             .get(key)
             .copied()
-            .map(|node| EntryRef::new(&mut self.cache, node))
+            .map(|node| EntryRef::new(self, node))
     }
 
     /// Inserts `value` for `key` into this map. If a value is already stored
@@ -156,16 +156,12 @@ where
         self.cache.len()
     }
 
-    fn head(&mut self) -> Option<EntryRef<'_, Key, Value>> {
-        self.cache
-            .head()
-            .map(|node| EntryRef::new(&mut self.cache, node))
+    fn head(&mut self) -> Option<EntryRef<'_, Self, Key, Value>> {
+        self.cache.head().map(|node| EntryRef::new(self, node))
     }
 
-    fn tail(&mut self) -> Option<EntryRef<'_, Key, Value>> {
-        self.cache
-            .tail()
-            .map(|node| EntryRef::new(&mut self.cache, node))
+    fn tail(&mut self) -> Option<EntryRef<'_, Self, Key, Value>> {
+        self.cache.tail().map(|node| EntryRef::new(self, node))
     }
 
     fn get<QueryKey>(&mut self, key: &QueryKey) -> Option<&Value>
@@ -184,7 +180,7 @@ where
         self.get_without_update(key)
     }
 
-    fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Key, Value>>
+    fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Self, Key, Value>>
     where
         QueryKey: Ord + Hash + Eq + ?Sized,
         Key: Borrow<QueryKey> + Ord + Hash + Eq,
@@ -194,5 +190,29 @@ where
 
     fn push(&mut self, key: Key, value: Value) -> Option<Removed<Key, Value>> {
         self.push(key, value)
+    }
+}
+
+impl<Key, Value, State> EntryCache<Key, Value> for LruHashMap<Key, Value, State>
+where
+    Key: Hash + Eq + Clone,
+    State: BuildHasher,
+{
+    fn node(&self, id: NodeId) -> &crate::lru::Node<Key, Value> {
+        self.cache.get_without_update(id)
+    }
+
+    fn move_node_to_front(&mut self, id: NodeId) {
+        self.cache.move_node_to_front(id);
+    }
+
+    fn sequence(&self) -> usize {
+        self.cache.sequence()
+    }
+
+    fn remove(&mut self, node: NodeId) -> ((Key, Value), Option<NodeId>, Option<NodeId>) {
+        let ((key, value), next, previous) = self.cache.remove(node);
+        self.map.remove(&key);
+        ((key, value), next, previous)
     }
 }

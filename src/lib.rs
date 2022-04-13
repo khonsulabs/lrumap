@@ -23,6 +23,7 @@ mod ordered;
 
 use std::{borrow::Borrow, hash::Hash};
 
+use crate::lru::EntryCache;
 pub use crate::{
     hashed::*,
     lru::{EntryRef, Removed},
@@ -31,7 +32,7 @@ pub use crate::{
 
 /// A Least Recently Used map interface that supports all map implementations
 /// exposed by this crate.
-pub trait LruMap<Key, Value> {
+pub trait LruMap<Key, Value>: EntryCache<Key, Value> + Sized {
     /// Creates a new map with the maximum `capacity`.
     ///
     /// # Panics
@@ -48,9 +49,9 @@ pub trait LruMap<Key, Value> {
     }
 
     /// Returns a reference to the most recently used key.
-    fn head(&mut self) -> Option<EntryRef<'_, Key, Value>>;
+    fn head(&mut self) -> Option<EntryRef<'_, Self, Key, Value>>;
     /// Returns a reference to the least recently used key.
-    fn tail(&mut self) -> Option<EntryRef<'_, Key, Value>>;
+    fn tail(&mut self) -> Option<EntryRef<'_, Self, Key, Value>>;
 
     /// Returns the stored value for `key`, if present.
     ///
@@ -74,7 +75,7 @@ pub trait LruMap<Key, Value> {
     /// This function does not touch the key, preserving its current position in
     /// the lru cache. The [`EntryRef`] can touch the key, depending on which
     /// functions are used.
-    fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Key, Value>>
+    fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Self, Key, Value>>
     where
         QueryKey: Ord + Hash + Eq + ?Sized,
         Key: Borrow<QueryKey> + Ord + Hash + Eq;
