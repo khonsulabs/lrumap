@@ -191,6 +191,10 @@ where
     fn push(&mut self, key: Key, value: Value) -> Option<Removed<Key, Value>> {
         self.push(key, value)
     }
+
+    fn iter(&self) -> crate::lru::Iter<'_, Key, Value> {
+        self.cache.iter()
+    }
 }
 
 impl<Key, Value, State> EntryCache<Key, Value> for LruHashMap<Key, Value, State>

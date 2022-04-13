@@ -8,25 +8,51 @@ where
 {
     let mut lru = Map::new(2);
     assert_eq!(lru.push(1, 1), None);
-    println!("1: {lru:#?}");
     assert_eq!(lru.push(2, 2), None);
-    println!("2: {lru:#?}");
     // Pushing a new value will expire the first push.
     assert_eq!(lru.push(3, 3), Some(Removed::Evicted(1, 1)));
-    println!("3: {lru:#?}");
     // Replacing 2 will return the existing value.
     assert_eq!(lru.push(2, 22), Some(Removed::PreviousValue(2)));
-    println!("4: {lru:#?}");
     // Replacing the value should have made 2 the most recent entry, meaning a
     // push will remove 3.
     assert_eq!(lru.push(4, 4), Some(Removed::Evicted(3, 3)));
-    println!("5: {lru:#?}");
     // Getting an entry should update its access
     assert_eq!(lru.get(&2), Some(&22));
     // But not using get_without_update
     assert_eq!(lru.get_without_update(&4), Some(&4));
-    println!("6: {lru:#?}");
     assert_eq!(lru.push(5, 5), Some(Removed::Evicted(4, 4)));
+    // This will call move_node_to_front with the short-circuit evaluating true
+    // at the start of the function.
+    assert_eq!(lru.get(&5), Some(&5));
+    assert_eq!(lru.head().unwrap().key(), &5);
+    println!("Final State: {:?}", lru);
+
+    // The final re-ordering edge case only arises with at least 3 entries. With
+    // only 2 entries, either entry is either the head or the tail.
+    let mut lru = Map::new(5);
+    lru.push(1, 1);
+    lru.push(2, 2);
+    lru.push(3, 3);
+    lru.push(4, 4);
+    lru.push(5, 5);
+    // Test the second to last moving to the front => 2, 5, 4, 3, 1
+    assert_eq!(lru.get(&2), Some(&2));
+    assert_eq!(
+        lru.iter().map(|(_key, value)| *value).collect::<Vec<_>>(),
+        vec![2, 5, 4, 3, 1]
+    );
+    // Test moving the middle entry => 4, 2, 5, 3, 1
+    assert_eq!(lru.get(&4), Some(&4));
+    assert_eq!(
+        lru.iter().map(|(_key, value)| *value).collect::<Vec<_>>(),
+        vec![4, 2, 5, 3, 1]
+    );
+    // Test moving the second entry => 2, 4, 5, 3, 1
+    assert_eq!(lru.get(&2), Some(&2));
+    assert_eq!(
+        lru.iter().map(|(_key, value)| *value).collect::<Vec<_>>(),
+        vec![2, 4, 5, 3, 1]
+    );
 }
 
 #[test]

@@ -26,7 +26,7 @@ use std::{borrow::Borrow, hash::Hash};
 use crate::lru::EntryCache;
 pub use crate::{
     hashed::*,
-    lru::{EntryRef, Removed},
+    lru::{EntryRef, Iter, Removed},
     ordered::*,
 };
 
@@ -52,6 +52,10 @@ pub trait LruMap<Key, Value>: EntryCache<Key, Value> + Sized {
     fn head(&mut self) -> Option<EntryRef<'_, Self, Key, Value>>;
     /// Returns a reference to the least recently used key.
     fn tail(&mut self) -> Option<EntryRef<'_, Self, Key, Value>>;
+
+    /// Returns an iterator over the keys and values in order from most recently
+    /// touched to least recently touched.
+    fn iter(&self) -> Iter<'_, Key, Value>;
 
     /// Returns the stored value for `key`, if present.
     ///

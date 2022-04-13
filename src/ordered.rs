@@ -166,6 +166,10 @@ where
     fn len(&self) -> usize {
         self.cache.len()
     }
+
+    fn iter(&self) -> crate::lru::Iter<'_, Key, Value> {
+        self.cache.iter()
+    }
 }
 
 impl<Key, Value> EntryCache<Key, Value> for LruBTreeMap<Key, Value>

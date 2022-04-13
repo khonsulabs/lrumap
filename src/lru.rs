@@ -37,6 +37,13 @@ impl<Key, Value> LruCache<Key, Value> {
         self.tail
     }
 
+    pub const fn iter(&self) -> Iter<'_, Key, Value> {
+        Iter {
+            cache: self,
+            node: self.head,
+        }
+    }
+
     pub fn get(&mut self, node: NodeId) -> &Node<Key, Value> {
         self.move_node_to_front(node);
         &self.nodes[node.as_usize()]
@@ -522,4 +529,28 @@ pub enum Removed<Key, Value> {
     PreviousValue(Value),
     /// An entry was evicted to make room for the key that was written to.
     Evicted(Key, Value),
+}
+
+/// An iterator over a cache's keys and values in order from most recently
+/// touched to least recently touched.
+pub struct Iter<'a, Key, Value> {
+    cache: &'a LruCache<Key, Value>,
+    node: Option<NodeId>,
+}
+
+impl<'a, Key, Value> Iterator for Iter<'a, Key, Value> {
+    type Item = (&'a Key, &'a Value);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.node {
+            Some(node) => {
+                self.node = self.cache.nodes[node.as_usize()].next;
+                Some((
+                    self.cache.nodes[node.as_usize()].key(),
+                    self.cache.nodes[node.as_usize()].value(),
+                ))
+            }
+            None => None,
+        }
+    }
 }
