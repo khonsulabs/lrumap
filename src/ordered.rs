@@ -10,7 +10,15 @@ use crate::{
     LruMap,
 };
 
+/// A Least Recently Used map with fixed capacity that stores keys using a
+/// [`BTreeMap`] internally. Inserting and querying has similar performance to
+/// using a [`BTreeMap`], but internally this data structure keeps track of the
+/// order in which the keys were last touched.
+///
+/// When inserting a new key and the map is at-capacity, the least recently used
+/// key will be evicted to make room for the new key.
 #[derive(Debug)]
+#[must_use]
 pub struct LruBTreeMap<Key, Value> {
     map: BTreeMap<Key, u32>,
     cache: LruCache<Key, Value>,
@@ -20,6 +28,11 @@ impl<Key, Value> LruBTreeMap<Key, Value>
 where
     Key: Ord + Clone,
 {
+    /// Creates a new map with the maximum `capacity`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `capacity` is <= 1 or > `u32::MAX`.
     pub fn new(capacity: usize) -> Self {
         assert!(capacity > 1);
         assert!(capacity <= usize::try_from(u32::MAX).unwrap());
@@ -29,15 +42,22 @@ where
         }
     }
 
+    /// Returns the stored value for `key`, if present.
+    ///
+    /// This function touches the key, making it the most recently used key.
     pub fn get<QueryKey>(&mut self, key: &QueryKey) -> Option<&Value>
     where
         QueryKey: Ord + ?Sized,
         Key: Borrow<QueryKey>,
     {
         let node = self.map.get(key).copied();
-        node.and_then(|node| self.cache.get(node).value())
+        node.map(|node| self.cache.get(node).value())
     }
 
+    /// Returns the stored value for `key`, if present.
+    ///
+    /// This function does not touch the key, preserving its current position in
+    /// the lru cache.
     pub fn get_without_update<QueryKey>(&self, key: &QueryKey) -> Option<&Value>
     where
         QueryKey: Ord + ?Sized,
@@ -45,9 +65,14 @@ where
     {
         self.map
             .get(key)
-            .and_then(|node| self.cache.get_without_update(*node).value())
+            .map(|node| self.cache.get_without_update(*node).value())
     }
 
+    /// Returns an [`EntryRef`] for `key`, if present.
+    ///
+    /// This function does not touch the key, preserving its current position in
+    /// the lru cache. The [`EntryRef`] can touch the key, depending on which
+    /// functions are used.
     pub fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Key, Value>>
     where
         QueryKey: Ord + ?Sized,
@@ -59,6 +84,13 @@ where
             .map(|node| EntryRef::new(&mut self.cache, node))
     }
 
+    /// Inserts `value` for `key` into this map. If a value is already stored
+    /// for this key, [`Removed::PreviousValue`] is returned with the previously
+    /// stored value. If no value is currently stored and the map is full, the
+    /// least recently used entry will be returned in [`Removed::Evicted`].
+    /// Otherwise, `None` will be returned.
+    ///
+    /// This function touches the key, making it the most recently used key.
     pub fn push(&mut self, key: Key, value: Value) -> Option<Removed<Key, Value>> {
         // Create the new entry for this key/value pair, which also puts it at
         // the front of the LRU
@@ -79,7 +111,7 @@ where
         // Insert the node into the BTreeMap
         entry.or_insert(node);
 
-        if let Some(Removed::Expired(key, _)) = &result {
+        if let Some(Removed::Evicted(key, _)) = &result {
             self.map.remove(key);
         }
 

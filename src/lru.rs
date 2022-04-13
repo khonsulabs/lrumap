@@ -21,19 +21,15 @@ impl<Key, Value> LruCache<Key, Value> {
         }
     }
 
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.length
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.length == 0
-    }
-
-    pub fn head(&self) -> Option<u32> {
+    pub const fn head(&self) -> Option<u32> {
         self.head
     }
 
-    pub fn tail(&self) -> Option<u32> {
+    pub const fn tail(&self) -> Option<u32> {
         self.tail
     }
 
@@ -60,7 +56,7 @@ impl<Key, Value> LruCache<Key, Value> {
         };
         (
             node,
-            result.map(|(key, value)| Removed::Expired(key, value)),
+            result.map(|(key, value)| Removed::Evicted(key, value)),
         )
     }
 
@@ -75,28 +71,26 @@ impl<Key, Value> LruCache<Key, Value> {
         // An entry already exists. Reuse the node.
         self.nodes[node_index as usize].last_accessed = self.sequence;
 
-        // Update the next pointer's previous to this node's previous.
-        if let Some(next_node) = self.nodes[node_index as usize].next {
-            self.nodes[next_node as usize].previous = self.nodes[node_index as usize].previous;
-        }
-
-        // Update the previous pointer's next to this
-        if let Some(previous_node_ref) = self.nodes[node_index as usize].previous.take() {
-            self.nodes[previous_node_ref as usize].next =
-                self.nodes[node_index as usize].next.take();
-            if self.tail == Some(node_index) {
-                self.tail = Some(previous_node_ref);
-            }
+        // Update the next pointer to the current head.
+        let mut next = self.head;
+        std::mem::swap(&mut next, &mut self.nodes[node_index as usize].next);
+        // Get and clear the previous node, as this node is going to be the new
+        // head.
+        let previous = self.nodes[node_index as usize].previous.take().unwrap();
+        // Update the previous pointer's next to the previous next value.
+        self.nodes[previous as usize].next = next;
+        if self.tail == Some(node_index) {
+            // If this is the tail, update the tail to the previous node.
+            self.tail = Some(previous);
+        } else {
+            // Otherwise, we need to update the next node's previous to point to
+            // this node's former previous.
+            self.nodes[next.unwrap() as usize].previous = Some(previous);
         }
 
         // Move this node to the front
-        {
-            let head = self.head.unwrap();
-            debug_assert!(self.nodes[head as usize].previous.is_none());
-            self.nodes[head as usize].previous = Some(node_index);
-        }
+        self.nodes[self.head.unwrap() as usize].previous = Some(node_index);
 
-        self.nodes[node_index as usize].next = self.head;
         self.head = Some(node_index);
     }
 
@@ -125,8 +119,8 @@ impl<Key, Value> LruCache<Key, Value> {
         } else if self.nodes.len() == self.nodes.capacity() {
             // Expire the least recently used key (tail).
             let index = self.tail.unwrap();
-
-            if let Some(previous) = self.nodes[index as usize].previous {
+            self.tail = self.nodes[index as usize].previous;
+            if let Some(previous) = self.tail {
                 self.nodes[previous as usize].next = None;
             }
             self.nodes[index as usize].previous = None;
@@ -251,10 +245,10 @@ impl<Key, Value> From<Entry<Key, Value>> for Option<(Key, Value)> {
 }
 
 pub struct Node<Key, Value> {
-    last_accessed: usize,
+    entry: Entry<Key, Value>,
     previous: Option<u32>,
     next: Option<u32>,
-    entry: Entry<Key, Value>,
+    last_accessed: usize,
 }
 
 impl<Key, Value> Debug for Node<Key, Value>
@@ -276,17 +270,17 @@ where
 }
 
 impl<Key, Value> Node<Key, Value> {
-    pub fn key(&self) -> Option<&Key> {
+    pub fn key(&self) -> &Key {
         match &self.entry {
-            Entry::Occupied { key, .. } => Some(key),
-            Entry::Vacant => None,
+            Entry::Occupied { key, .. } => key,
+            Entry::Vacant => unreachable!("EntityRef can't be made against Vacant"),
         }
     }
 
-    pub fn value(&self) -> Option<&Value> {
+    pub fn value(&self) -> &Value {
         match &self.entry {
-            Entry::Occupied { value, .. } => Some(value),
-            Entry::Vacant => None,
+            Entry::Occupied { value, .. } => value,
+            Entry::Vacant => unreachable!("EntityRef can't be made against Vacant"),
         }
     }
 
@@ -296,11 +290,12 @@ impl<Key, Value> Node<Key, Value> {
                 std::mem::swap(value, &mut new_value);
                 new_value
             }
-            Entry::Vacant => unreachable!("invalid state"),
+            Entry::Vacant => unreachable!("EntityRef can't be made against Vacant"),
         }
     }
 }
 
+/// A reference to an entry in a Least Recently Used map.
 #[derive(Debug)]
 pub struct EntryRef<'a, Key, Value> {
     cache: &'a mut LruCache<Key, Value>,
@@ -317,32 +312,56 @@ impl<'a, Key, Value> EntryRef<'a, Key, Value> {
         }
     }
 
-    pub fn id(&self) -> u32 {
+    /// Returns the unique index of this node. This function should only be used
+    /// for debugging purposes.
+    #[must_use]
+    pub const fn id(&self) -> u32 {
         self.node
     }
 
+    /// Returns the key of this entry.
+    #[must_use]
     pub fn key(&self) -> &Key {
-        self.cache.nodes[self.node as usize].key().unwrap()
+        self.cache.nodes[self.node as usize].key()
     }
 
+    /// Returns the value of this entry.
+    ///
+    /// This function touches the key, making it the most recently used key.
+    /// This function only touches the node once. Subsequent calls will return
+    /// the value without touching the key. This remains true until
+    /// `move_next()` or `move_previous()` are invoked.
+    #[must_use]
     pub fn value(&mut self) -> &Value {
         if !self.accessed {
             self.accessed = true;
             self.cache.move_node_to_front(self.node);
         }
-        self.cache.nodes[self.node as usize].value().unwrap()
+        self.cache.nodes[self.node as usize].value()
     }
 
+    /// Returns the value of this entry.
+    ///
+    /// This function does not touch the key, preserving its current position in
+    /// the lru cache.
+    #[must_use]
     pub fn peek_value(&self) -> &Value {
-        self.cache.nodes[self.node as usize].value().unwrap()
+        self.cache.nodes[self.node as usize].value()
     }
 
+    /// Returns the number of changes to the cache since this key was last
+    /// touched.
+    #[must_use]
     pub fn staleness(&self) -> usize {
         self.cache
             .sequence
             .wrapping_sub(self.cache.nodes[self.node as usize].last_accessed)
     }
 
+    /// Updates this reference to point to the next least recently used key in
+    /// the list. Returns true if a next entry was found, or returns false if
+    /// the entry is the last entry in the list.
+    #[must_use]
     pub fn move_next(&mut self) -> bool {
         if let Some(next) = self.cache.nodes[self.node as usize].next {
             self.node = next;
@@ -353,6 +372,10 @@ impl<'a, Key, Value> EntryRef<'a, Key, Value> {
         }
     }
 
+    /// Updates this reference to point to the next most recently used key in
+    /// the list. Returns true if a previous entry was found, or returns false
+    /// if the entry is the first entry in the list.
+    #[must_use]
     pub fn move_previous(&mut self) -> bool {
         if let Some(previous) = self.cache.nodes[self.node as usize].previous {
             self.node = previous;
@@ -364,8 +387,11 @@ impl<'a, Key, Value> EntryRef<'a, Key, Value> {
     }
 }
 
+/// A removed value or entry.
 #[derive(Debug, Eq, PartialEq)]
 pub enum Removed<Key, Value> {
+    /// The previously stored value for the key that was written to.
     PreviousValue(Value),
-    Expired(Key, Value),
+    /// An entry was evicted to make room for the key that was written to.
+    Evicted(Key, Value),
 }

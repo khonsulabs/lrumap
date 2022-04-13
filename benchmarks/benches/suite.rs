@@ -1,6 +1,12 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
+use rand::{prelude::SliceRandom, thread_rng};
 
-pub fn benchmark(c: &mut Criterion) {
+fn benchmark(c: &mut Criterion) {
+    push(c);
+    get(c);
+}
+
+fn push(c: &mut Criterion) {
     let mut group = c.benchmark_group("push");
 
     let mut entries = Vec::new();
@@ -47,6 +53,59 @@ pub fn benchmark(c: &mut Criterion) {
                 }
             },
             BatchSize::NumIterations(u64::try_from(entries.len()).unwrap()),
+        )
+    });
+}
+
+fn get(c: &mut Criterion) {
+    let mut group = c.benchmark_group("get");
+
+    let mut ordered = lrumap::LruBTreeMap::new(1000);
+    let mut unordered = lrumap::LruHashMap::new(1000);
+    let mut lru = lru::LruCache::new(1000);
+    let mut indicies = Vec::new();
+    for i in 0_u32..=1000 {
+        indicies.push(i);
+        ordered.push(i, i);
+        unordered.push(i, i);
+        lru.push(i, i);
+    }
+
+    indicies.shuffle(&mut thread_rng());
+
+    group.bench_function("ordered-lru", |b| {
+        b.iter_batched(
+            || &indicies[..],
+            |indicies: &[u32]| {
+                for i in indicies {
+                    ordered.get(i);
+                }
+            },
+            BatchSize::NumIterations(u64::try_from(indicies.len()).unwrap()),
+        )
+    });
+
+    group.bench_function("hashed-lru", |b| {
+        b.iter_batched(
+            || &indicies[..],
+            |indicies: &[u32]| {
+                for i in indicies {
+                    unordered.get(i);
+                }
+            },
+            BatchSize::NumIterations(u64::try_from(indicies.len()).unwrap()),
+        )
+    });
+
+    group.bench_function("lru", |b| {
+        b.iter_batched(
+            || &indicies[..],
+            |indicies: &[u32]| {
+                for i in indicies {
+                    lru.get(i);
+                }
+            },
+            BatchSize::NumIterations(u64::try_from(indicies.len()).unwrap()),
         )
     });
 }
