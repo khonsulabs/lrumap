@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="LruMap"><meta name="keywords" content="rust, rustlang, rust-lang, lrumap"><title>lrumap - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../dark.css" disabled><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../storage.js"></script><script src="../crates.js"></script><script defer src="../main.js"></script>
+    <noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../favicon.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../lrumap/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../lrumap/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"><a href="#">Crate lrumap</a></h2><div class="sidebar-elems"><div class="block"><ul><li class="version">Version 0.1.0</li><li><a id="all-types" href="all.html">All Items</a></li></div></ul><section><div class="block"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div></section><div id="sidebar-vars" data-name="lrumap" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../lrumap/index.html"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
+    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">lrumap</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/lrumap/lib.rs.html#1-100">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="lrumap"><a href="#lrumap">LruMap</a></h2>
+<p><img src="https://img.shields.io/badge/unsafe-forbid-success" alt="lrumap forbids unsafe code" />
+<img src="https://img.shields.io/badge/status-alpha-orange" alt="lrumap is considered alpha" />
+<a href="https://crates.io/crates/lrumap"><img src="https://img.shields.io/crates/v/lrumap.svg" alt="crate version" /></a>
+<a href="https://github.com/khonsulabs/lrumap/actions?query=workflow:Tests"><img src="https://img.shields.io/github/workflow/status/khonsulabs/lrumap/Tests/main" alt="Live Build Status" /></a>
+<a href="https://khonsulabs.github.io/lrumap/coverage/"><img src="https://khonsulabs.github.io/lrumap/coverage/badge.svg" alt="HTML Coverage Report for main branch" /></a>
+<a href="https://khonsulabs.github.io/lrumap/main/lrumap/"><img src="https://img.shields.io/badge/docs-main-informational" alt="Documentation for main branch" /></a></p>
+<p>A set of safe Least-Recently-Used (LRU) cache types aimed at providing flexible
+map-like structures that automatically evict the least recently used key and
+value when its capacity is reached.</p>
+<h3 id="why-another-lru-crate"><a href="#why-another-lru-crate">Why another LRU crate?</a></h3>
+<p>For <a href="https://github.com/khonsulabs/nebari">Nebari</a>, we needed to introduce an LRU cache to the
+<code>StdFileManager</code> to close files that haven’t been used recently. Each file can
+have multiple readers, leading to an issue of needing to scan the LRU map for
+all values that match a specific file. In the end, <a href="https://github.com/ecton">@ecton</a> decided an
+LRU implementation that used a <code>BTreeMap</code> instead of a <code>HashMap</code> would be able
+to solve this problem by offering an <code>iter_starting_at(key)</code> function. No
+existing crates seemed to offer this functionality.</p>
+<h3 id="open-source-licenses"><a href="#open-source-licenses">Open-source Licenses</a></h3>
+<p>This project, like all projects from <a href="https://khonsulabs.com/">Khonsu Labs</a>, are
+open-source. This repository is available under the <a href="./LICENSE-MIT">MIT License</a>
+or the <a href="./LICENSE-APACHE">Apache License 2.0</a>.</p>
+<p>To learn more about contributing, please see <a href="./CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
+</div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.EntryRef.html" title="lrumap::EntryRef struct">EntryRef</a></div><div class="item-right docblock-short"><p>A reference to an entry in a Least Recently Used map.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Iter.html" title="lrumap::Iter struct">Iter</a></div><div class="item-right docblock-short"><p>An iterator over a cache’s keys and values in order from most recently
+touched to least recently touched.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.LruBTreeMap.html" title="lrumap::LruBTreeMap struct">LruBTreeMap</a></div><div class="item-right docblock-short"><p>A Least Recently Used map with fixed capacity that stores keys using a
+<a href="https://doc.rust-lang.org/1.60.0/alloc/collections/btree/map/struct.BTreeMap.html" title="BTreeMap"><code>BTreeMap</code></a> internally. Inserting and querying has similar performance to
+using a <a href="https://doc.rust-lang.org/1.60.0/alloc/collections/btree/map/struct.BTreeMap.html" title="BTreeMap"><code>BTreeMap</code></a>, but internally this data structure keeps track of the
+order in which the keys were last touched.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.LruHashMap.html" title="lrumap::LruHashMap struct">LruHashMap</a></div><div class="item-right docblock-short"><p>A Least Recently Used map with fixed capacity that stores keys using a
+<code>HashMap</code> internally. Inserting and querying has similar performance to
+using a <code>HashMap</code>, but internally this data structure keeps track of the
+order in which the keys were last touched.</p>
+</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Removed.html" title="lrumap::Removed enum">Removed</a></div><div class="item-right docblock-short"><p>A removed value or entry.</p>
+</div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.LruMap.html" title="lrumap::LruMap trait">LruMap</a></div><div class="item-right docblock-short"><p>A Least Recently Used map interface that supports all map implementations
+exposed by this crate.</p>
+</div></div></div></section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="lrumap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
+</body></html>
