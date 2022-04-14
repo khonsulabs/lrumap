@@ -7,10 +7,14 @@ where
     Map: LruMap<u32, u32> + Debug,
 {
     let mut lru = Map::new(2);
+    assert!(lru.is_empty());
     assert_eq!(lru.push(1, 1), None);
+    assert_eq!(lru.len(), 1);
     assert_eq!(lru.push(2, 2), None);
+    assert_eq!(lru.len(), 2);
     // Pushing a new value will expire the first push.
     assert_eq!(lru.push(3, 3), Some(Removed::Evicted(1, 1)));
+    assert_eq!(lru.len(), 2);
     // Replacing 2 will return the existing value.
     assert_eq!(lru.push(2, 22), Some(Removed::PreviousValue(2)));
     // Replacing the value should have made 2 the most recent entry, meaning a
@@ -20,6 +24,11 @@ where
     assert_eq!(lru.get(&2), Some(&22));
     // But not using get_without_update
     assert_eq!(lru.get_without_update(&4), Some(&4));
+    // Key 2 is still the front, and shouldn't be stale.
+    assert_eq!(lru.entry(&2).unwrap().staleness(), 0);
+    // Key 4 is the second, and there has been one modification since the entry
+    // was last touched.
+    assert_eq!(lru.entry(&4).unwrap().staleness(), 1);
     assert_eq!(lru.push(5, 5), Some(Removed::Evicted(4, 4)));
     // This will call move_node_to_front with the short-circuit evaluating true
     // at the start of the function.
@@ -53,6 +62,13 @@ where
         lru.iter().map(|(_key, value)| *value).collect::<Vec<_>>(),
         vec![2, 4, 5, 3, 1]
     );
+    // Test the staleness (number of changes since last touch). 7 total
+    // operations.
+    assert_eq!(lru.entry(&2).unwrap().staleness(), 0); // touched on op 5 and 7
+    assert_eq!(lru.entry(&4).unwrap().staleness(), 1); // touched on op 6
+    assert_eq!(lru.entry(&5).unwrap().staleness(), 3); // touched on op 4
+    assert_eq!(lru.entry(&3).unwrap().staleness(), 5); // Never touched
+    assert_eq!(lru.entry(&1).unwrap().staleness(), 7); // Never touched
 }
 
 #[test]
@@ -136,12 +152,15 @@ where
     let entry = lru.head().unwrap();
     // Remove 3, no previous, should return None.
     assert!(entry.remove_moving_previous().is_none());
+    assert_eq!(lru.len(), 2);
     assert!(lru.get(&3).is_none());
     let entry = lru.tail().unwrap();
     // Remove 1, no next, should return None.
     assert!(entry.remove_moving_next().is_none());
+    assert_eq!(lru.len(), 1);
     assert!(lru.get(&1).is_none());
     let (key, _value) = lru.head().unwrap().take();
+    assert!(lru.is_empty());
     assert!(lru.get(&2).is_none());
     assert_eq!(key, 2);
     assert!(lru.head().is_none());

@@ -163,6 +163,7 @@ impl<Key, Value> LruCache<Key, Value> {
     }
 
     pub fn remove(&mut self, node: NodeId) -> ((Key, Value), Option<NodeId>, Option<NodeId>) {
+        self.length -= 1;
         let removed = self.nodes[node.as_usize()].entry.evict();
         let mut next = self.vacant;
         std::mem::swap(&mut next, &mut self.nodes[node.as_usize()].next);
