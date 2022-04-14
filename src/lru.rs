@@ -390,13 +390,6 @@ where
         }
     }
 
-    /// Returns the unique index of this node. This function should only be used
-    /// for debugging purposes.
-    #[must_use]
-    pub fn id(&self) -> NodeId {
-        self.node
-    }
-
     /// Returns the key of this entry.
     #[must_use]
     pub fn key(&self) -> &Key {
