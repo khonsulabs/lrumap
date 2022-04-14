@@ -4,17 +4,60 @@
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../lrumap/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
         </a><h2 class="location"><a href="#">Crate lrumap</a></h2><div class="sidebar-elems"><div class="block"><ul><li class="version">Version 0.1.0</li><li><a id="all-types" href="all.html">All Items</a></li></div></ul><section><div class="block"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div></section><div id="sidebar-vars" data-name="lrumap" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../lrumap/index.html"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
-    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">lrumap</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/lrumap/lib.rs.html#1-100">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A set of safe Least-Recently-Used (LRU) cache types aimed at providing flexible
+    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">lrumap</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/lrumap/lib.rs.html#1-107">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A set of safe Least-Recently-Used (LRU) cache types aimed at providing flexible
 map-like structures that automatically evict the least recently used key and
 value when its capacity is reached.</p>
+<h3 id="lru-implementation"><a href="#lru-implementation">LRU Implementation</a></h3>
+<p>This crate utilizes an “arena”-style linked list implementation, where all nodes
+of the linked list are stored in a <code>Vec</code>. Instead of using pointers to the
+nodes, all references to a node in the linked list is done using an index into
+the <code>Vec</code>.</p>
+<p>This allows all LRU list operations to be performed in constant time and remain
+very efficient. Each of the implementations in this crate use this internal LRU
+linked list implementation.</p>
+<h3 id="lruhashmap"><a href="#lruhashmap">LruHashMap</a></h3>
+<p>The <a href="https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruHashMap.html"><code>LruHashMap</code></a> type is an LRU implementation that internally
+uses a <code>HashMap</code> to track keys. Its performance characteristics will be similar
+to the underlying hash map and hash implementation.</p>
+<p>For most users, this type will be the best choice.</p>
+<p>This crate has no features enabled by default, but transparently can switch to
+<a href="https://docs.rs/hashbrown/latest/hashbrown/"><code>hashbrown</code></a> and its default hasher by enabling feature <code>hashbrown</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">lrumap</span>::{<span class="ident">LruHashMap</span>, <span class="ident">Removed</span>};
+
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lru</span> <span class="op">=</span> <span class="ident">LruHashMap::new</span>(<span class="number">3</span>);
+<span class="ident">lru</span>.<span class="ident">push</span>(<span class="number">1</span>, <span class="string">&quot;one&quot;</span>);
+<span class="ident">lru</span>.<span class="ident">push</span>(<span class="number">2</span>, <span class="string">&quot;two&quot;</span>);
+<span class="ident">lru</span>.<span class="ident">push</span>(<span class="number">3</span>, <span class="string">&quot;three&quot;</span>);
+
+<span class="comment">// The cache is now full. The next push will evict the least recently touched entry.</span>
+<span class="kw">let</span> <span class="ident">removed</span> <span class="op">=</span> <span class="ident">lru</span>.<span class="ident">push</span>(<span class="number">4</span>, <span class="string">&quot;four&quot;</span>);
+<span class="macro">assert_eq!</span>(<span class="ident">removed</span>, <span class="prelude-val">Some</span>(<span class="ident">Removed::Evicted</span>(<span class="number">1</span>, <span class="string">&quot;one&quot;</span>)));</code></pre></div>
+<h3 id="lrubtreemap"><a href="#lrubtreemap">LruBTreeMap</a></h3>
+<p>The <a href="https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruBTreeMap.html"><code>LruBTreeMap</code></a> type is an LRU implementation that internally
+uses a <code>BTreeMap</code> to track keys. Its performance characteristics will be similar
+to the underlying container implementation.</p>
+<p>By using a <code>BTreeMap</code> to track keys, this type enables efficient range-based
+queries:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">lrumap::LruBTreeMap</span>;
+
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lru</span> <span class="op">=</span> <span class="ident">LruBTreeMap::new</span>(<span class="number">5</span>);
+<span class="ident">lru</span>.<span class="ident">extend</span>([(<span class="number">1</span>, <span class="number">1</span>), (<span class="number">2</span>, <span class="number">2</span>), (<span class="number">3</span>, <span class="number">3</span>), (<span class="number">4</span>, <span class="number">4</span>), (<span class="number">5</span>, <span class="number">5</span>)]);
+<span class="macro">assert_eq!</span>(<span class="ident">lru</span>.<span class="ident">most_recent_in_range</span>(<span class="number">2</span>..<span class="op">=</span><span class="number">4</span>).<span class="ident">unwrap</span>().<span class="ident">key</span>(), <span class="kw-2">&amp;</span><span class="number">4</span>);
+
+<span class="comment">// Change the order by retrieving key 2.</span>
+<span class="ident">lru</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="number">2</span>);
+<span class="macro">assert_eq!</span>(<span class="ident">lru</span>.<span class="ident">most_recent_in_range</span>(<span class="number">2</span>..<span class="op">=</span><span class="number">4</span>).<span class="ident">unwrap</span>().<span class="ident">key</span>(), <span class="kw-2">&amp;</span><span class="number">2</span>);</code></pre></div>
 <h3 id="why-another-lru-crate"><a href="#why-another-lru-crate">Why another LRU crate?</a></h3>
 <p>For <a href="https://github.com/khonsulabs/nebari">Nebari</a>, we needed to introduce an LRU cache to the
 <code>StdFileManager</code> to close files that haven’t been used recently. Each file can
 have multiple readers, leading to an issue of needing to scan the LRU map for
 all values that match a specific file. In the end, <a href="https://github.com/ecton">@ecton</a> decided an
 LRU implementation that used a <code>BTreeMap</code> instead of a <code>HashMap</code> would be able
-to solve this problem by offering an <code>iter_starting_at(key)</code> function. No
-existing crates seemed to offer this functionality.</p>
+to solve this problem by offering an
+<a href="https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruBTreeMap.html#method.most_recent_in_range"><code>most_recent_in_range(key)</code></a> function. No existing crates
+seemed to offer this functionality.</p>
 <h3 id="open-source-licenses"><a href="#open-source-licenses">Open-source Licenses</a></h3>
 <p>This project, like all projects from <a href="https://khonsulabs.com/">Khonsu Labs</a>, are
 open-source. This repository is available under the <a href="./LICENSE-MIT">MIT License</a>
