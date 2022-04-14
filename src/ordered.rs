@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::{
-    lru::{EntryCache, EntryRef, LruCache, NodeId, Removed},
+    lru::{EntryCache, EntryRef, IntoIter, LruCache, NodeId, Removed},
     LruMap,
 };
 
@@ -192,5 +192,18 @@ where
         let ((key, value), next, previous) = self.cache.remove(node);
         self.map.remove(&key);
         ((key, value), next, previous)
+    }
+}
+
+impl<Key, Value> IntoIterator for LruBTreeMap<Key, Value>
+where
+    Key: Ord + Clone,
+{
+    type Item = (Key, Value);
+
+    type IntoIter = IntoIter<Key, Value>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter::from(self.cache)
     }
 }

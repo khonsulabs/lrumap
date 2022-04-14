@@ -23,7 +23,7 @@ mod ordered;
 
 use std::{borrow::Borrow, hash::Hash};
 
-use crate::lru::EntryCache;
+use crate::lru::{EntryCache, IntoIter};
 pub use crate::{
     hashed::*,
     lru::{EntryRef, Iter, Removed},
@@ -32,7 +32,9 @@ pub use crate::{
 
 /// A Least Recently Used map interface that supports all map implementations
 /// exposed by this crate.
-pub trait LruMap<Key, Value>: EntryCache<Key, Value> + Sized {
+pub trait LruMap<Key, Value>:
+    IntoIterator<Item = (Key, Value), IntoIter = IntoIter<Key, Value>> + EntryCache<Key, Value> + Sized
+{
     /// Creates a new map with the maximum `capacity`.
     ///
     /// # Panics

@@ -555,3 +555,24 @@ impl<'a, Key, Value> Iterator for Iter<'a, Key, Value> {
         }
     }
 }
+
+pub struct IntoIter<Key, Value> {
+    cache: LruCache<Key, Value>,
+}
+
+impl<Key, Value> From<LruCache<Key, Value>> for IntoIter<Key, Value> {
+    fn from(cache: LruCache<Key, Value>) -> Self {
+        Self { cache }
+    }
+}
+
+impl<Key, Value> Iterator for IntoIter<Key, Value> {
+    type Item = (Key, Value);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.cache.head().map(|node| {
+            let (removed, ..) = self.cache.remove(node);
+            removed
+        })
+    }
+}

@@ -35,7 +35,21 @@ where
     assert_eq!(lru.get(&5), Some(&5));
     assert_eq!(lru.head().unwrap().key(), &5);
     println!("Final State: {:?}", lru);
+}
 
+#[test]
+fn hash_basics() {
+    basic_tests::<LruHashMap<_, _>>();
+}
+
+#[test]
+fn btree_basics() {
+    basic_tests::<LruBTreeMap<_, _>>();
+}
+fn larger_tests<Map>()
+where
+    Map: LruMap<u32, u32> + Debug,
+{
     // The final re-ordering edge case only arises with at least 3 entries. With
     // only 2 entries, either entry is either the head or the tail.
     let mut lru = Map::new(5);
@@ -58,10 +72,6 @@ where
     );
     // Test moving the second entry => 2, 4, 5, 3, 1
     assert_eq!(lru.get(&2), Some(&2));
-    assert_eq!(
-        lru.iter().map(|(_key, value)| *value).collect::<Vec<_>>(),
-        vec![2, 4, 5, 3, 1]
-    );
     // Test the staleness (number of changes since last touch). 7 total
     // operations.
     assert_eq!(lru.entry(&2).unwrap().staleness(), 0); // touched on op 5 and 7
@@ -69,16 +79,24 @@ where
     assert_eq!(lru.entry(&5).unwrap().staleness(), 3); // touched on op 4
     assert_eq!(lru.entry(&3).unwrap().staleness(), 5); // Never touched
     assert_eq!(lru.entry(&1).unwrap().staleness(), 7); // Never touched
+
+    // Verify the order, but use into_iter() this time.
+    assert_eq!(
+        lru.into_iter()
+            .map(|(_key, value)| value)
+            .collect::<Vec<_>>(),
+        vec![2, 4, 5, 3, 1]
+    );
 }
 
 #[test]
-fn hash_basics() {
-    basic_tests::<LruHashMap<_, _>>();
+fn hash_larger() {
+    larger_tests::<LruHashMap<_, _>>();
 }
 
 #[test]
-fn btree_basics() {
-    basic_tests::<LruBTreeMap<_, _>>();
+fn btree_larger() {
+    larger_tests::<LruBTreeMap<_, _>>();
 }
 
 #[allow(clippy::cognitive_complexity)]
