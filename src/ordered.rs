@@ -186,8 +186,8 @@ where
 
     /// Returns the most recently touched entry with a key within `range`.
     ///
-    /// This function iterates the internal [`BTreeMap`] to identify all entries
-    /// that match the given range. For each returned entry, the entry's
+    /// This function uses [`BTreeMap::range`] to identify all entries that
+    /// match the given range. For each returned entry, the entry's
     /// [staleness](EntryRef::staleness) is compared, and the least stale entry
     /// is returned. If no keys match the range, `None` is returned.
     ///
@@ -215,16 +215,62 @@ where
         Key: Borrow<QueryKey>,
         Range: RangeBounds<QueryKey>,
     {
+        self.most_recent_in_range_where(range, |_, _| true)
+    }
+
+    /// Returns the most recently touched entry with a key within `range` that
+    /// passes the `condition` check.
+    ///
+    /// This function uses [`BTreeMap::range`] to identify all entries that
+    /// match the given range. Each key and value that matches is passed to
+    /// `condition`. For each entry where `condition` returns true, the
+    /// [staleness](EntryRef::staleness) is compared, and the least stale entry
+    /// is returned. If no keys match the range, `None` is returned.
+    ///
+    /// This function does not touch any keys, preserving the current order of
+    /// the lru cache. The [`EntryRef`] returned can be used to peek, touch, or
+    /// remove the entry.
+    ///
+    /// ```rust
+    /// use lrumap::LruBTreeMap;
+    ///
+    /// let mut lru = LruBTreeMap::<u32, u16>::new(5);
+    /// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);
+    ///
+    /// let condition = |key: &u32, value: &u16| key == &3 || value == &4;
+    /// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &4);
+    ///
+    /// // Change the order by retrieving key 2. However, 2 doesn't meet the
+    /// // condition, so the result is unchanged.
+    /// lru.get(&2);
+    /// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &4);
+    ///
+    /// // Request 3, moving it to the front. Since 3 matches the condition, the
+    /// // result is now 3.
+    /// lru.get(&3);
+    /// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &3);
+    /// ```
+    pub fn most_recent_in_range_where<QueryKey, Range, Condition>(
+        &mut self,
+        range: Range,
+        mut condition: Condition,
+    ) -> Option<EntryRef<'_, Self, Key, Value>>
+    where
+        QueryKey: Ord + ?Sized,
+        Key: Borrow<QueryKey>,
+        Range: RangeBounds<QueryKey>,
+        Condition: for<'key, 'value> FnMut(&'key Key, &'value Value) -> bool,
+    {
         let mut closest_node = None;
         let mut closest_staleness = usize::MAX;
-        for (_, &node) in self.map.range(range) {
-            let staleness = self
-                .cache
-                .sequence()
-                .wrapping_sub(self.cache.get_without_touch(node).last_accessed());
-            if staleness < closest_staleness {
-                closest_staleness = staleness;
-                closest_node = Some(node);
+        for (_, &node_id) in self.map.range(range) {
+            let node = self.cache.get_without_touch(node_id);
+            if condition(node.key(), node.value()) {
+                let staleness = self.cache.sequence().wrapping_sub(node.last_accessed());
+                if staleness < closest_staleness {
+                    closest_staleness = staleness;
+                    closest_node = Some(node_id);
+                }
             }
         }
         closest_node.map(|node| EntryRef::new(self, node))
@@ -328,4 +374,10 @@ fn most_recent_in_range_test() {
     assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &4);
     lru.get(&2);
     assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &2);
+    assert_eq!(
+        lru.most_recent_in_range_where(2..=4, |key: &u32, _value: &u16| key != &2)
+            .unwrap()
+            .key(),
+        &4
+    );
 }
