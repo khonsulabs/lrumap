@@ -1,0 +1,11 @@
+[package]
+name = "xtask"
+version = "0.0.0"
+edition = "2018"
+description = "Development-related Tasks"
+publish = false
+repository = "https://github.com/khonsulabs/bonsaidb"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+khonsu-tools = { git = "https://github.com/khonsulabs/khonsu-tools.git", branch = "main" }
