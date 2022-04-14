@@ -334,6 +334,58 @@
 <span id="329">329</span>
 <span id="330">330</span>
 <span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">borrow::Borrow</span>,
     <span class="ident">collections</span>::{<span class="ident">btree_map</span>, <span class="ident">BTreeMap</span>},
@@ -522,8 +574,8 @@
 
     <span class="doccomment">/// Returns the most recently touched entry with a key within `range`.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// This function iterates the internal [`BTreeMap`] to identify all entries</span>
-    <span class="doccomment">/// that match the given range. For each returned entry, the entry&#39;s</span>
+    <span class="doccomment">/// This function uses [`BTreeMap::range`] to identify all entries that</span>
+    <span class="doccomment">/// match the given range. For each returned entry, the entry&#39;s</span>
     <span class="doccomment">/// [staleness](EntryRef::staleness) is compared, and the least stale entry</span>
     <span class="doccomment">/// is returned. If no keys match the range, `None` is returned.</span>
     <span class="doccomment">///</span>
@@ -551,16 +603,62 @@
         <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
         <span class="ident">Range</span>: <span class="ident">RangeBounds</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
     {
+        <span class="self">self</span>.<span class="ident">most_recent_in_range_where</span>(<span class="ident">range</span>, <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> <span class="bool-val">true</span>)
+    }
+
+    <span class="doccomment">/// Returns the most recently touched entry with a key within `range` that</span>
+    <span class="doccomment">/// passes the `condition` check.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This function uses [`BTreeMap::range`] to identify all entries that</span>
+    <span class="doccomment">/// match the given range. Each key and value that matches is passed to</span>
+    <span class="doccomment">/// `condition`. For each entry where `condition` returns true, the</span>
+    <span class="doccomment">/// [staleness](EntryRef::staleness) is compared, and the least stale entry</span>
+    <span class="doccomment">/// is returned. If no keys match the range, `None` is returned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This function does not touch any keys, preserving the current order of</span>
+    <span class="doccomment">/// the lru cache. The [`EntryRef`] returned can be used to peek, touch, or</span>
+    <span class="doccomment">/// remove the entry.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// use lrumap::LruBTreeMap;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let mut lru = LruBTreeMap::&lt;u32, u16&gt;::new(5);</span>
+    <span class="doccomment">/// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let condition = |key: &amp;u32, value: &amp;u16| key == &amp;3 || value == &amp;4;</span>
+    <span class="doccomment">/// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &amp;4);</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// // Change the order by retrieving key 2. However, 2 doesn&#39;t meet the</span>
+    <span class="doccomment">/// // condition, so the result is unchanged.</span>
+    <span class="doccomment">/// lru.get(&amp;2);</span>
+    <span class="doccomment">/// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &amp;4);</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// // Request 3, moving it to the front. Since 3 matches the condition, the</span>
+    <span class="doccomment">/// // result is now 3.</span>
+    <span class="doccomment">/// lru.get(&amp;3);</span>
+    <span class="doccomment">/// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &amp;3);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">most_recent_in_range_where</span><span class="op">&lt;</span><span class="ident">QueryKey</span>, <span class="ident">Range</span>, <span class="ident">Condition</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
+        <span class="ident">range</span>: <span class="ident">Range</span>,
+        <span class="kw-2">mut</span> <span class="ident">condition</span>: <span class="ident">Condition</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntryRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="self">Self</span>, <span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">QueryKey</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+        <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
+        <span class="ident">Range</span>: <span class="ident">RangeBounds</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
+        <span class="ident">Condition</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;key</span>, <span class="lifetime">&#39;value</span><span class="op">&gt;</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;key</span> <span class="ident">Key</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;value</span> <span class="ident">Value</span>) -&gt; <span class="ident">bool</span>,
+    {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">closest_node</span> <span class="op">=</span> <span class="prelude-val">None</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">closest_staleness</span> <span class="op">=</span> <span class="ident">usize::MAX</span>;
-        <span class="kw">for</span> (<span class="kw">_</span>, <span class="kw-2">&amp;</span><span class="ident">node</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">range</span>(<span class="ident">range</span>) {
-            <span class="kw">let</span> <span class="ident">staleness</span> <span class="op">=</span> <span class="self">self</span>
-                .<span class="ident">cache</span>
-                .<span class="ident">sequence</span>()
-                .<span class="ident">wrapping_sub</span>(<span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">get_without_touch</span>(<span class="ident">node</span>).<span class="ident">last_accessed</span>());
-            <span class="kw">if</span> <span class="ident">staleness</span> <span class="op">&lt;</span> <span class="ident">closest_staleness</span> {
-                <span class="ident">closest_staleness</span> <span class="op">=</span> <span class="ident">staleness</span>;
-                <span class="ident">closest_node</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">node</span>);
+        <span class="kw">for</span> (<span class="kw">_</span>, <span class="kw-2">&amp;</span><span class="ident">node_id</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">range</span>(<span class="ident">range</span>) {
+            <span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">get_without_touch</span>(<span class="ident">node_id</span>);
+            <span class="kw">if</span> <span class="ident">condition</span>(<span class="ident">node</span>.<span class="ident">key</span>(), <span class="ident">node</span>.<span class="ident">value</span>()) {
+                <span class="kw">let</span> <span class="ident">staleness</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">sequence</span>().<span class="ident">wrapping_sub</span>(<span class="ident">node</span>.<span class="ident">last_accessed</span>());
+                <span class="kw">if</span> <span class="ident">staleness</span> <span class="op">&lt;</span> <span class="ident">closest_staleness</span> {
+                    <span class="ident">closest_staleness</span> <span class="op">=</span> <span class="ident">staleness</span>;
+                    <span class="ident">closest_node</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">node_id</span>);
+                }
             }
         }
         <span class="ident">closest_node</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">node</span><span class="op">|</span> <span class="ident">EntryRef::new</span>(<span class="self">self</span>, <span class="ident">node</span>))
@@ -664,6 +762,12 @@
     <span class="macro">assert_eq!</span>(<span class="ident">lru</span>.<span class="ident">most_recent_in_range</span>(<span class="number">2</span>..<span class="op">=</span><span class="number">4</span>).<span class="ident">unwrap</span>().<span class="ident">key</span>(), <span class="kw-2">&amp;</span><span class="number">4</span>);
     <span class="ident">lru</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="number">2</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">lru</span>.<span class="ident">most_recent_in_range</span>(<span class="number">2</span>..<span class="op">=</span><span class="number">4</span>).<span class="ident">unwrap</span>().<span class="ident">key</span>(), <span class="kw-2">&amp;</span><span class="number">2</span>);
+    <span class="macro">assert_eq!</span>(
+        <span class="ident">lru</span>.<span class="ident">most_recent_in_range_where</span>(<span class="number">2</span>..<span class="op">=</span><span class="number">4</span>, <span class="op">|</span><span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>, <span class="ident">_value</span>: <span class="kw-2">&amp;</span><span class="ident">u16</span><span class="op">|</span> <span class="ident">key</span> <span class="op">!</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="number">2</span>)
+            .<span class="ident">unwrap</span>()
+            .<span class="ident">key</span>(),
+        <span class="kw-2">&amp;</span><span class="number">4</span>
+    );
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lrumap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
