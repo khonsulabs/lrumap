@@ -574,13 +574,6 @@
 <span id="569">569</span>
 <span id="570">570</span>
 <span id="571">571</span>
-<span id="572">572</span>
-<span id="573">573</span>
-<span id="574">574</span>
-<span id="575">575</span>
-<span id="576">576</span>
-<span id="577">577</span>
-<span id="578">578</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashSet</span>, <span class="ident">fmt::Debug</span>, <span class="ident">marker::PhantomData</span>};
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LruCache</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> {
@@ -971,13 +964,6 @@
             <span class="ident">accessed</span>: <span class="bool-val">false</span>,
             <span class="ident">_phantom</span>: <span class="ident">PhantomData</span>,
         }
-    }
-
-    <span class="doccomment">/// Returns the unique index of this node. This function should only be used</span>
-    <span class="doccomment">/// for debugging purposes.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">NodeId</span> {
-        <span class="self">self</span>.<span class="ident">node</span>
     }
 
     <span class="doccomment">/// Returns the key of this entry.</span>
