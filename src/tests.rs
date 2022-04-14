@@ -166,11 +166,28 @@ where
         lru.iter().collect::<Vec<_>>(),
         &[(&5, &5), (&4, &4), (&3, &3), (&2, &2), (&1, &1)]
     );
+
+    // Test double-ended iteration
+    let mut iter = lru.iter();
+    assert!(iter.next_back().is_none());
+    for i in (1..=5).rev() {
+        assert_eq!(iter.next().unwrap().0, &i);
+    }
+    assert!(iter.next().is_none());
+    // We're now past the end of the tail, we should be able to recover and get
+    // back to the head.
+    for i in 1..=5 {
+        assert_eq!(iter.next_back().unwrap().0, &i);
+    }
+    assert!(iter.next_back().is_none());
+
     // Test partial iteration
     assert_eq!(
         lru.entry(&3).unwrap().iter().collect::<Vec<_>>(),
         &[(&3, &3), (&2, &2), (&1, &1)]
     );
+    // Moving back should return the previous entry from the starting point.
+    assert_eq!(lru.entry(&3).unwrap().iter().next_back().unwrap().0, &4);
 }
 
 #[test]

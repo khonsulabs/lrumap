@@ -40,7 +40,7 @@ impl<Key, Value> LruCache<Key, Value> {
     pub const fn iter(&self) -> Iter<'_, Key, Value> {
         Iter {
             cache: self,
-            node: self.head,
+            node: IterState::BeforeHead,
         }
     }
 
@@ -394,7 +394,7 @@ where
     pub fn iter(&self) -> Iter<'_, Key, Value> {
         Iter {
             cache: self.cache.cache(),
-            node: Some(self.node),
+            node: IterState::StartingAt(self.node),
         }
     }
 
@@ -489,27 +489,63 @@ pub enum Removed<Key, Value> {
     Evicted(Key, Value),
 }
 
-/// An iterator over a cache's keys and values in order from most recently
-/// touched to least recently touched.
+/// A double-ended iterator over a cache's keys and values in order from most
+/// recently touched to least recently touched.
 #[must_use]
 pub struct Iter<'a, Key, Value> {
     cache: &'a LruCache<Key, Value>,
-    node: Option<NodeId>,
+    node: IterState,
+}
+
+enum IterState {
+    BeforeHead,
+    AfterTail,
+    StartingAt(NodeId),
+    Node(NodeId),
 }
 
 impl<'a, Key, Value> Iterator for Iter<'a, Key, Value> {
     type Item = (&'a Key, &'a Value);
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.node {
-            Some(node) => {
-                self.node = self.cache.nodes[node.as_usize()].next;
-                Some((
-                    self.cache.nodes[node.as_usize()].key(),
-                    self.cache.nodes[node.as_usize()].value(),
-                ))
+        let next_node = match self.node {
+            IterState::BeforeHead => self.cache.head,
+            IterState::StartingAt(node) => Some(node),
+            IterState::Node(node) => self.cache.nodes[node.as_usize()].next,
+            IterState::AfterTail => None,
+        };
+        match next_node {
+            Some(node_id) => {
+                let node = &self.cache.nodes[node_id.as_usize()];
+                self.node = IterState::Node(node_id);
+                Some((node.key(), node.value()))
             }
-            None => None,
+            None => {
+                self.node = IterState::AfterTail;
+                None
+            }
+        }
+    }
+}
+impl<'a, Key, Value> DoubleEndedIterator for Iter<'a, Key, Value> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        let previous_node = match self.node {
+            IterState::BeforeHead => None,
+            IterState::StartingAt(node) | IterState::Node(node) => {
+                self.cache.nodes[node.as_usize()].previous
+            }
+            IterState::AfterTail => self.cache.tail,
+        };
+        match previous_node {
+            Some(node_id) => {
+                let node = &self.cache.nodes[node_id.as_usize()];
+                self.node = IterState::Node(node_id);
+                Some((node.key(), node.value()))
+            }
+            None => {
+                self.node = IterState::BeforeHead;
+                None
+            }
         }
     }
 }
