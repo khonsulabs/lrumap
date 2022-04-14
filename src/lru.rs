@@ -45,16 +45,16 @@ impl<Key, Value> LruCache<Key, Value> {
     }
 
     pub fn get(&mut self, node: NodeId) -> &Node<Key, Value> {
-        self.move_node_to_front(node);
+        self.touch(node);
         &self.nodes[node.as_usize()]
     }
 
-    pub fn get_without_update(&self, node: NodeId) -> &Node<Key, Value> {
+    pub fn get_without_touch(&self, node: NodeId) -> &Node<Key, Value> {
         &self.nodes[node.as_usize()]
     }
 
     pub fn get_mut(&mut self, node: NodeId) -> &mut Node<Key, Value> {
-        self.move_node_to_front(node);
+        self.touch(node);
         &mut self.nodes[node.as_usize()]
     }
 
@@ -71,7 +71,7 @@ impl<Key, Value> LruCache<Key, Value> {
         )
     }
 
-    pub fn move_node_to_front(&mut self, node_index: NodeId) {
+    pub fn touch(&mut self, node_index: NodeId) {
         if self.head == Some(node_index) {
             // No-op.
             return;
@@ -105,7 +105,7 @@ impl<Key, Value> LruCache<Key, Value> {
         self.head = Some(node_index);
     }
 
-    pub fn push_front(&mut self, key: Key, value: Value) -> (NodeId, Option<(Key, Value)>) {
+    fn push_front(&mut self, key: Key, value: Value) -> (NodeId, Option<(Key, Value)>) {
         let (node, removed) = self.allocate_node(key, value);
         self.sequence += 1;
         let mut entry = &mut self.nodes[node.as_usize()];
@@ -119,7 +119,7 @@ impl<Key, Value> LruCache<Key, Value> {
         (node, removed)
     }
 
-    pub fn allocate_node(&mut self, key: Key, value: Value) -> (NodeId, Option<(Key, Value)>) {
+    fn allocate_node(&mut self, key: Key, value: Value) -> (NodeId, Option<(Key, Value)>) {
         if let Some(vacant) = self.vacant {
             // Pull a node off the vacant list.
             self.vacant = self.nodes[vacant.as_usize()].next;
@@ -188,57 +188,6 @@ impl<Key, Value> LruCache<Key, Value> {
 
         (removed, next, previous)
     }
-
-    // pub fn pop_tail(&mut self) -> Option<(u32, (Key, Value))> {
-    //     let vacated_entry = match (&mut self.head, &mut self.tail) {
-    //         (Some(head), Some(tail)) if head == tail => {
-    //             self.length -= 1;
-    //             // Last node. Reset the list to None.
-    //             let last_node = *head;
-    //             self.head = None;
-    //             self.tail = None;
-    //             if let Some(vacant_head) = self.vacant {
-    //                 self.nodes[last_node as usize].next = Some(vacant_head);
-    //             }
-    //             self.vacant = Some(last_node);
-    //             Some(last_node)
-    //         }
-    //         (Some(_), Some(tail)) => {
-    //             self.length -= 1;
-    //             // First, get the node before the tail.
-    //             let tail_node = &mut self.nodes[*tail as usize];
-    //             debug_assert!(tail_node.next.is_none());
-    //             let mut node_ref = tail_node.previous.take().unwrap();
-    //             // Clear the next pointer
-    //             let mut new_tail = &mut self.nodes[node_ref as usize];
-    //             new_tail.next = None;
-    //             // Next, set the previous node to the tail
-    //             std::mem::swap(&mut node_ref, tail);
-    //             // Move the previous tail to the vacant list
-    //             match &mut self.vacant {
-    //                 Some(last_vacant) => {
-    //                     self.nodes[node_ref as usize].next = Some(*last_vacant);
-    //                 }
-    //                 None => self.vacant = Some(node_ref),
-    //             }
-    //             Some(node_ref)
-    //         }
-    //         _ => None,
-    //     };
-
-    //     vacated_entry.and_then(|node_ref| {
-    //         // Vacate the slot
-    //         let mut previous_entry = Entry::Vacant;
-    //         std::mem::swap(
-    //             &mut previous_entry,
-    //             &mut self.nodes[node_ref as usize].entry,
-    //         );
-    //         match previous_entry {
-    //             Entry::Occupied { key, value } => Some((node_ref, (key, value))),
-    //             Entry::Vacant => None,
-    //         }
-    //     })
-    // }
 }
 
 impl<Key, Value> Debug for LruCache<Key, Value>
@@ -323,6 +272,10 @@ where
 }
 
 impl<Key, Value> Node<Key, Value> {
+    pub const fn last_accessed(&self) -> usize {
+        self.last_accessed
+    }
+
     pub fn key(&self) -> &Key {
         match &self.entry {
             Entry::Occupied { key, .. } => key,
@@ -361,9 +314,8 @@ where
 }
 
 pub trait EntryCache<Key, Value> {
-    fn node(&self, id: NodeId) -> &Node<Key, Value>;
-    fn move_node_to_front(&mut self, id: NodeId);
-    fn sequence(&self) -> usize;
+    fn cache(&self) -> &LruCache<Key, Value>;
+    fn cache_mut(&mut self) -> &mut LruCache<Key, Value>;
     fn remove(&mut self, node: NodeId) -> ((Key, Value), Option<NodeId>, Option<NodeId>);
 }
 
@@ -393,7 +345,7 @@ where
     /// Returns the key of this entry.
     #[must_use]
     pub fn key(&self) -> &Key {
-        self.cache.node(self.node).key()
+        self.cache.cache().get_without_touch(self.node).key()
     }
 
     /// Returns the value of this entry.
@@ -408,12 +360,12 @@ where
             self.accessed = true;
             self.touch();
         }
-        self.cache.node(self.node).value()
+        self.cache.cache_mut().get(self.node).value()
     }
 
     /// Touches this key, making it the most recently used key.
     pub fn touch(&mut self) {
-        self.cache.move_node_to_front(self.node);
+        self.cache.cache_mut().touch(self.node);
     }
 
     /// Returns the value of this entry.
@@ -422,16 +374,28 @@ where
     /// the lru cache.
     #[must_use]
     pub fn peek_value(&self) -> &Value {
-        self.cache.node(self.node).value()
+        self.cache.cache().get_without_touch(self.node).value()
     }
 
     /// Returns the number of changes to the cache since this key was last
     /// touched.
     #[must_use]
     pub fn staleness(&self) -> usize {
-        self.cache
-            .sequence()
-            .wrapping_sub(self.cache.node(self.node).last_accessed)
+        self.cache.cache().sequence().wrapping_sub(
+            self.cache
+                .cache()
+                .get_without_touch(self.node)
+                .last_accessed,
+        )
+    }
+
+    /// Returns an iterator over the least-recently used keys beginning with the
+    /// current entry.
+    pub fn iter(&self) -> Iter<'_, Key, Value> {
+        Iter {
+            cache: self.cache.cache(),
+            node: Some(self.node),
+        }
     }
 
     /// Updates this reference to point to the next least recently used key in
@@ -439,7 +403,7 @@ where
     /// the entry is the last entry in the list.
     #[must_use]
     pub fn move_next(&mut self) -> bool {
-        if let Some(next) = self.cache.node(self.node).next {
+        if let Some(next) = self.cache.cache().get_without_touch(self.node).next {
             self.node = next;
             self.accessed = false;
             true
@@ -453,7 +417,7 @@ where
     /// if the entry is the first entry in the list.
     #[must_use]
     pub fn move_previous(&mut self) -> bool {
-        if let Some(previous) = self.cache.node(self.node).previous {
+        if let Some(previous) = self.cache.cache().get_without_touch(self.node).previous {
             self.node = previous;
             self.accessed = false;
             true
@@ -527,6 +491,7 @@ pub enum Removed<Key, Value> {
 
 /// An iterator over a cache's keys and values in order from most recently
 /// touched to least recently touched.
+#[must_use]
 pub struct Iter<'a, Key, Value> {
     cache: &'a LruCache<Key, Value>,
     node: Option<NodeId>,

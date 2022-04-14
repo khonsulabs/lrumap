@@ -3,6 +3,7 @@ use std::{
     collections::{btree_map, BTreeMap},
     fmt::Debug,
     hash::Hash,
+    ops::RangeBounds,
 };
 
 use crate::{
@@ -65,7 +66,7 @@ where
     {
         self.map
             .get(key)
-            .map(|node| self.cache.get_without_update(*node).value())
+            .map(|node| self.cache.get_without_touch(*node).value())
     }
 
     /// Returns an [`EntryRef`] for `key`, if present.
@@ -73,6 +74,28 @@ where
     /// This function does not touch the key, preserving its current position in
     /// the lru cache. The [`EntryRef`] can touch the key, depending on which
     /// functions are used.
+    ///
+    /// ```rust
+    /// use lrumap::{LruBTreeMap, LruMap, Removed};
+    ///
+    /// let mut lru = LruBTreeMap::new(3);
+    /// lru.push(1, 1);
+    /// lru.push(2, 2);
+    /// lru.push(3, 3);
+    ///
+    /// // The cache has been updated once since entry 2 was touched.
+    /// let mut entry = lru.entry(&2).unwrap();
+    /// assert_eq!(entry.staleness(), 1);
+    /// // Peeking the value will not update the entry's position.
+    /// assert_eq!(entry.peek_value(), &2);
+    /// assert_eq!(entry.staleness(), 1);
+    /// // Querying the value or touching the entry will move it to the
+    /// // front of the cache.
+    /// assert_eq!(entry.value(), &2);
+    /// assert_eq!(entry.staleness(), 0);
+    ///
+    /// assert_eq!(lru.head().unwrap().key(), &2);
+    /// ```
     pub fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Self, Key, Value>>
     where
         QueryKey: Ord + ?Sized,
@@ -91,6 +114,24 @@ where
     /// Otherwise, `None` will be returned.
     ///
     /// This function touches the key, making it the most recently used key.
+    ///
+    /// ```rust
+    /// use lrumap::{LruBTreeMap, LruMap, Removed};
+    ///
+    /// let mut lru = LruBTreeMap::new(3);
+    /// lru.push(1, 1);
+    /// lru.push(2, 2);
+    /// lru.push(3, 3);
+    ///
+    /// // The cache is now full. The next push will evict an entry.
+    /// let removed = lru.push(4, 4);
+    /// assert_eq!(removed, Some(Removed::Evicted(1, 1)));
+    ///
+    /// // This leaves the cache with 4 as the most recent key, and 2 as the
+    /// // least recent key.
+    /// assert_eq!(lru.head().unwrap().key(), &4);
+    /// assert_eq!(lru.tail().unwrap().key(), &2);
+    /// ```
     pub fn push(&mut self, key: Key, value: Value) -> Option<Removed<Key, Value>> {
         // Create the new entry for this key/value pair, which also puts it at
         // the front of the LRU
@@ -117,6 +158,77 @@ where
 
         result
     }
+
+    /// Pushes all items from `iterator` into this map. If there are more
+    /// entries in the iterator than capacity remaining, keys will be evicted as
+    /// needed.
+    ///
+    /// This function is equivalent to a for loop calling [`Self::push()`].
+    ///
+    /// ```rust
+    /// use lrumap::{LruBTreeMap, LruMap};
+    ///
+    /// let mut lru = LruBTreeMap::new(3);
+    /// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4)]);
+    ///
+    /// assert_eq!(lru.head().unwrap().key(), &4);
+    /// assert_eq!(lru.tail().unwrap().key(), &2);
+    /// ```
+    pub fn extend<IntoIter: IntoIterator<Item = (Key, Value)>>(&mut self, iterator: IntoIter) {
+        for (key, value) in iterator {
+            let (node_id, removed) = self.cache.push(key.clone(), value);
+            if let Some(Removed::Evicted(evicted_key, _)) = removed {
+                self.map.remove(&evicted_key);
+            }
+            self.map.insert(key, node_id);
+        }
+    }
+
+    /// Returns the most recently touched entry with a key within `range`.
+    ///
+    /// This function iterates the internal [`BTreeMap`] to identify all entries
+    /// that match the given range. For each returned entry, the entry's
+    /// [staleness](EntryRef::staleness) is compared, and the least stale entry
+    /// is returned. If no keys match the range, `None` is returned.
+    ///
+    /// This function does not touch any keys, preserving the current order of
+    /// the lru cache. The [`EntryRef`] returned can be used to peek, touch, or
+    /// remove the entry.
+    ///
+    /// ```rust
+    /// use lrumap::LruBTreeMap;
+    ///
+    /// let mut lru = LruBTreeMap::new(5);
+    /// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);
+    ///
+    /// assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &4);
+    /// // Change the order by retrieving key 2.
+    /// lru.get(&2);
+    /// assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &2);
+    /// ```
+    pub fn most_recent_in_range<QueryKey, Range>(
+        &mut self,
+        range: Range,
+    ) -> Option<EntryRef<'_, Self, Key, Value>>
+    where
+        QueryKey: Ord + ?Sized,
+        Key: Borrow<QueryKey>,
+        Range: RangeBounds<QueryKey>,
+    {
+        let mut closest_node = None;
+        let mut closest_staleness = usize::MAX;
+        for (_, &node) in self.map.range(range) {
+            let staleness = self
+                .cache
+                .sequence()
+                .wrapping_sub(self.cache.get_without_touch(node).last_accessed());
+            if staleness < closest_staleness {
+                closest_staleness = staleness;
+                closest_node = Some(node);
+            }
+        }
+        closest_node.map(|node| EntryRef::new(self, node))
+    }
 }
 
 impl<Key, Value> LruMap<Key, Value> for LruBTreeMap<Key, Value>
@@ -127,12 +239,20 @@ where
         Self::new(capacity)
     }
 
+    fn len(&self) -> usize {
+        self.cache.len()
+    }
+
     fn head(&mut self) -> Option<EntryRef<'_, Self, Key, Value>> {
         self.cache.head().map(|node| EntryRef::new(self, node))
     }
 
     fn tail(&mut self) -> Option<EntryRef<'_, Self, Key, Value>> {
         self.cache.tail().map(|node| EntryRef::new(self, node))
+    }
+
+    fn iter(&self) -> crate::lru::Iter<'_, Key, Value> {
+        self.cache.iter()
     }
 
     fn get<QueryKey>(&mut self, key: &QueryKey) -> Option<&Value>
@@ -163,12 +283,8 @@ where
         self.push(key, value)
     }
 
-    fn len(&self) -> usize {
-        self.cache.len()
-    }
-
-    fn iter(&self) -> crate::lru::Iter<'_, Key, Value> {
-        self.cache.iter()
+    fn extend<IntoIter: IntoIterator<Item = (Key, Value)>>(&mut self, iterator: IntoIter) {
+        self.extend(iterator);
     }
 }
 
@@ -176,16 +292,12 @@ impl<Key, Value> EntryCache<Key, Value> for LruBTreeMap<Key, Value>
 where
     Key: Ord + Clone,
 {
-    fn node(&self, id: NodeId) -> &crate::lru::Node<Key, Value> {
-        self.cache.get_without_update(id)
+    fn cache(&self) -> &LruCache<Key, Value> {
+        &self.cache
     }
 
-    fn move_node_to_front(&mut self, id: NodeId) {
-        self.cache.move_node_to_front(id);
-    }
-
-    fn sequence(&self) -> usize {
-        self.cache.sequence()
+    fn cache_mut(&mut self) -> &mut LruCache<Key, Value> {
+        &mut self.cache
     }
 
     fn remove(&mut self, node: NodeId) -> ((Key, Value), Option<NodeId>, Option<NodeId>) {
@@ -206,4 +318,14 @@ where
     fn into_iter(self) -> Self::IntoIter {
         IntoIter::from(self.cache)
     }
+}
+
+#[test]
+fn most_recent_in_range_test() {
+    let mut lru = LruBTreeMap::new(5);
+    lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);
+
+    assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &4);
+    lru.get(&2);
+    assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &2);
 }

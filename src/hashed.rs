@@ -90,7 +90,7 @@ where
     {
         self.map
             .get(key)
-            .map(|node| self.cache.get_without_update(*node).value())
+            .map(|node| self.cache.get_without_touch(*node).value())
     }
 
     /// Returns an [`EntryRef`] for `key`, if present.
@@ -98,6 +98,28 @@ where
     /// This function does not touch the key, preserving its current position in
     /// the lru cache. The [`EntryRef`] can touch the key, depending on which
     /// functions are used.
+    ///
+    /// ```rust
+    /// use lrumap::{LruHashMap, LruMap, Removed};
+    ///
+    /// let mut lru = LruHashMap::new(3);
+    /// lru.push(1, 1);
+    /// lru.push(2, 2);
+    /// lru.push(3, 3);
+    ///
+    /// // The cache has been updated once since entry 2 was touched.
+    /// let mut entry = lru.entry(&2).unwrap();
+    /// assert_eq!(entry.staleness(), 1);
+    /// // Peeking the value will not update the entry's position.
+    /// assert_eq!(entry.peek_value(), &2);
+    /// assert_eq!(entry.staleness(), 1);
+    /// // Querying the value or touching the entry will move it to the
+    /// // front of the cache.
+    /// assert_eq!(entry.value(), &2);
+    /// assert_eq!(entry.staleness(), 0);
+    ///
+    /// assert_eq!(lru.head().unwrap().key(), &2);
+    /// ```
     pub fn entry<QueryKey>(&mut self, key: &QueryKey) -> Option<EntryRef<'_, Self, Key, Value>>
     where
         QueryKey: Hash + Eq + ?Sized,
@@ -116,6 +138,24 @@ where
     /// Otherwise, `None` will be returned.
     ///
     /// This function touches the key, making it the most recently used key.
+    ///
+    /// ```rust
+    /// use lrumap::{LruHashMap, LruMap, Removed};
+    ///
+    /// let mut lru = LruHashMap::new(3);
+    /// lru.push(1, 1);
+    /// lru.push(2, 2);
+    /// lru.push(3, 3);
+    ///
+    /// // The cache is now full. The next push will evict an entry.
+    /// let removed = lru.push(4, 4);
+    /// assert_eq!(removed, Some(Removed::Evicted(1, 1)));
+    ///
+    /// // This leaves the cache with 4 as the most recent key, and 2 as the
+    /// // least recent key.
+    /// assert_eq!(lru.head().unwrap().key(), &4);
+    /// assert_eq!(lru.tail().unwrap().key(), &2);
+    /// ```
     pub fn push(&mut self, key: Key, value: Value) -> Option<Removed<Key, Value>> {
         // Create the new entry for this key/value pair, which also puts it at
         // the front of the LRU
@@ -141,6 +181,27 @@ where
         }
 
         result
+    }
+
+    /// Pushes all items from `iterator` into this map. If there are more
+    /// entries in the iterator than capacity remaining, keys will be evicted as
+    /// needed.
+    ///
+    /// This function is equivalent to a for loop calling [`Self::push()`].
+    ///
+    /// ```rust
+    /// use lrumap::{LruHashMap, LruMap};
+    ///
+    /// let mut lru = LruHashMap::new(3);
+    /// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4)]);
+    ///
+    /// assert_eq!(lru.head().unwrap().key(), &4);
+    /// assert_eq!(lru.tail().unwrap().key(), &2);
+    /// ```
+    pub fn extend<IntoIter: IntoIterator<Item = (Key, Value)>>(&mut self, iterator: IntoIter) {
+        for (key, value) in iterator {
+            self.push(key, value);
+        }
     }
 }
 
@@ -195,6 +256,10 @@ where
     fn iter(&self) -> crate::lru::Iter<'_, Key, Value> {
         self.cache.iter()
     }
+
+    fn extend<IntoIter: IntoIterator<Item = (Key, Value)>>(&mut self, iterator: IntoIter) {
+        self.extend(iterator);
+    }
 }
 
 impl<Key, Value, State> EntryCache<Key, Value> for LruHashMap<Key, Value, State>
@@ -202,16 +267,12 @@ where
     Key: Hash + Eq + Clone,
     State: BuildHasher,
 {
-    fn node(&self, id: NodeId) -> &crate::lru::Node<Key, Value> {
-        self.cache.get_without_update(id)
+    fn cache(&self) -> &LruCache<Key, Value> {
+        &self.cache
     }
 
-    fn move_node_to_front(&mut self, id: NodeId) {
-        self.cache.move_node_to_front(id);
-    }
-
-    fn sequence(&self) -> usize {
-        self.cache.sequence()
+    fn cache_mut(&mut self) -> &mut LruCache<Key, Value> {
+        &mut self.cache
     }
 
     fn remove(&mut self, node: NodeId) -> ((Key, Value), Option<NodeId>, Option<NodeId>) {

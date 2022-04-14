@@ -94,6 +94,13 @@ pub trait LruMap<Key, Value>:
     ///
     /// This function touches the key, making it the most recently used key.
     fn push(&mut self, key: Key, value: Value) -> Option<Removed<Key, Value>>;
+
+    /// Pushes all items from `iterator` into this map. If there are more
+    /// entries in the iterator than capacity remaining, keys will be evicted as
+    /// needed.
+    ///
+    /// This function is equivalent to a for loop calling [`Self::push()`].
+    fn extend<IntoIter: IntoIterator<Item = (Key, Value)>>(&mut self, iterator: IntoIter);
 }
 
 #[cfg(test)]

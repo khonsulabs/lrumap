@@ -53,11 +53,7 @@ where
     // The final re-ordering edge case only arises with at least 3 entries. With
     // only 2 entries, either entry is either the head or the tail.
     let mut lru = Map::new(5);
-    lru.push(1, 1);
-    lru.push(2, 2);
-    lru.push(3, 3);
-    lru.push(4, 4);
-    lru.push(5, 5);
+    lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);
     // Test the second to last moving to the front => 2, 5, 4, 3, 1
     assert_eq!(lru.get(&2), Some(&2));
     assert_eq!(
@@ -100,7 +96,7 @@ fn btree_larger() {
 }
 
 #[allow(clippy::cognitive_complexity)]
-fn iteration_tests<Map>()
+fn enumeration_tests<Map>()
 where
     Map: LruMap<u32, u32> + Debug,
 {
@@ -147,6 +143,34 @@ where
         assert_eq!(entry.peek_value(), &2);
         assert!(!entry.move_next());
     }
+}
+
+#[test]
+fn hash_enumeration() {
+    enumeration_tests::<LruHashMap<_, _>>();
+}
+
+#[test]
+fn btree_enumeration() {
+    enumeration_tests::<LruBTreeMap<_, _>>();
+}
+
+#[allow(clippy::cognitive_complexity)]
+fn iteration_tests<Map>()
+where
+    Map: LruMap<u32, u32> + Debug,
+{
+    let mut lru = Map::new(5);
+    lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);
+    assert_eq!(
+        lru.iter().collect::<Vec<_>>(),
+        &[(&5, &5), (&4, &4), (&3, &3), (&2, &2), (&1, &1)]
+    );
+    // Test partial iteration
+    assert_eq!(
+        lru.entry(&3).unwrap().iter().collect::<Vec<_>>(),
+        &[(&3, &3), (&2, &2), (&1, &1)]
+    );
 }
 
 #[test]
