@@ -290,6 +290,13 @@ impl<Key, Value> Node<Key, Value> {
         }
     }
 
+    pub fn value_mut(&mut self) -> &mut Value {
+        match &mut self.entry {
+            Entry::Occupied { value, .. } => value,
+            Entry::Vacant => unreachable!("EntryRef can't be made against Vacant"),
+        }
+    }
+
     pub fn replace_value(&mut self, mut new_value: Value) -> Value {
         match &mut self.entry {
             Entry::Occupied { value, .. } => {

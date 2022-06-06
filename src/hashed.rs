@@ -81,6 +81,18 @@ where
 
     /// Returns the stored value for `key`, if present.
     ///
+    /// This function touches the key, making it the most recently used key.
+    pub fn get_mut<QueryKey>(&mut self, key: &QueryKey) -> Option<&mut Value>
+    where
+        QueryKey: Hash + Eq + ?Sized,
+        Key: Borrow<QueryKey>,
+    {
+        let node = self.map.get(key).copied();
+        node.map(|node| self.cache.get_mut(node).value_mut())
+    }
+
+    /// Returns the stored value for `key`, if present.
+    ///
     /// This function does not touch the key, preserving its current position in
     /// the lru cache.
     pub fn get_without_update<QueryKey>(&self, key: &QueryKey) -> Option<&Value>
