@@ -1,9 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ordered.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ordered.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lrumap/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../lrumap/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lrumap/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ordered.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ordered.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../lrumap/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -386,389 +381,416 @@
 <span id="381">381</span>
 <span id="382">382</span>
 <span id="383">383</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">borrow::Borrow</span>,
-    <span class="ident">collections</span>::{<span class="ident">btree_map</span>, <span class="ident">BTreeMap</span>},
-    <span class="ident">fmt::Debug</span>,
-    <span class="ident">hash::Hash</span>,
-    <span class="ident">ops::RangeBounds</span>,
-};
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+</pre><pre class="rust"><code><span class="kw">use </span>std::borrow::Borrow;
+<span class="kw">use </span>std::collections::{btree_map, BTreeMap};
+<span class="kw">use </span>std::fmt::Debug;
+<span class="kw">use </span>std::hash::Hash;
+<span class="kw">use </span>std::ops::RangeBounds;
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">lru</span>::{<span class="ident">EntryCache</span>, <span class="ident">EntryRef</span>, <span class="ident">IntoIter</span>, <span class="ident">LruCache</span>, <span class="ident">NodeId</span>, <span class="ident">Removed</span>},
-    <span class="ident">LruMap</span>,
-};
+<span class="kw">use </span><span class="kw">crate</span>::lru::{EntryCache, EntryRef, IntoIter, LruCache, NodeId, Removed};
+<span class="kw">use </span><span class="kw">crate</span>::LruMap;
 
-<span class="doccomment">/// A Least Recently Used map with fixed capacity that stores keys using a</span>
-<span class="doccomment">/// [`BTreeMap`] internally. Inserting and querying has similar performance to</span>
-<span class="doccomment">/// using a [`BTreeMap`], but internally this data structure keeps track of the</span>
-<span class="doccomment">/// order in which the keys were last touched.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// When inserting a new key and the map is at-capacity, the least recently used</span>
-<span class="doccomment">/// key will be evicted to make room for the new key.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">must_use</span>]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LruBTreeMap</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> {
-    <span class="ident">map</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">NodeId</span><span class="op">&gt;</span>,
-    <span class="ident">cache</span>: <span class="ident">LruCache</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
+<span class="doccomment">/// A Least Recently Used map with fixed capacity that stores keys using a
+/// [`BTreeMap`] internally. Inserting and querying has similar performance to
+/// using a [`BTreeMap`], but internally this data structure keeps track of the
+/// order in which the keys were last touched.
+///
+/// When inserting a new key and the map is at-capacity, the least recently used
+/// key will be evicted to make room for the new key.
+///
+/// To avoid `unsafe`, this crate must store each entry&#39;s key twice. This means
+/// that `Key` must implement `Clone`. If you&#39;re using expensive-to-clone keys,
+/// consider wrapping the key in an `Rc`/`Arc` or using an alternate LRU crate.
+</span><span class="attribute">#[derive(Debug)]
+#[must_use]
+</span><span class="kw">pub struct </span>LruBTreeMap&lt;Key, Value&gt; {
+    map: BTreeMap&lt;Key, NodeId&gt;,
+    cache: LruCache&lt;Key, Value&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> <span class="ident">LruBTreeMap</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">Key</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;Key, Value&gt; LruBTreeMap&lt;Key, Value&gt;
+<span class="kw">where
+    </span>Key: Ord + Clone,
 {
-    <span class="doccomment">/// Creates a new map with the maximum `capacity`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if `capacity` is &lt;= 1 or &gt; `u32::MAX`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">capacity</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="macro">assert!</span>(<span class="ident">capacity</span> <span class="op">&gt;</span> <span class="number">1</span>);
-        <span class="macro">assert!</span>(<span class="ident">capacity</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">u32::MAX</span>).<span class="ident">unwrap</span>());
-        <span class="self">Self</span> {
-            <span class="ident">map</span>: <span class="ident">BTreeMap::new</span>(),
-            <span class="ident">cache</span>: <span class="ident">LruCache::new</span>(<span class="ident">capacity</span>),
+    <span class="doccomment">/// Creates a new map with the maximum `capacity`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `capacity` is &lt;= 1 or &gt; `u32::MAX`.
+    </span><span class="kw">pub fn </span>new(capacity: usize) -&gt; <span class="self">Self </span>{
+        <span class="macro">assert!</span>(capacity &gt; <span class="number">1</span>);
+        <span class="macro">assert!</span>(capacity &lt;= usize::try_from(u32::MAX).unwrap());
+        <span class="self">Self </span>{
+            map: BTreeMap::new(),
+            cache: LruCache::new(capacity),
         }
     }
 
-    <span class="doccomment">/// Returns the stored value for `key`, if present.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function touches the key, making it the most recently used key.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">QueryKey</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">QueryKey</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
-        <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Returns the stored value for `key`, if present.
+    ///
+    /// This function touches the key, making it the most recently used key.
+    </span><span class="kw">pub fn </span>get&lt;QueryKey&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>QueryKey) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Value&gt;
+    <span class="kw">where
+        </span>QueryKey: Ord + <span class="question-mark">?</span>Sized,
+        Key: Borrow&lt;QueryKey&gt;,
     {
-        <span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">get</span>(<span class="ident">key</span>).<span class="ident">copied</span>();
-        <span class="ident">node</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">node</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">get</span>(<span class="ident">node</span>).<span class="ident">value</span>())
+        <span class="kw">let </span>node = <span class="self">self</span>.map.get(key).copied();
+        node.map(|node| <span class="self">self</span>.cache.get(node).value())
     }
 
-    <span class="doccomment">/// Returns the stored value for `key`, if present.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function does not touch the key, preserving its current position in</span>
-    <span class="doccomment">/// the lru cache.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_without_update</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">QueryKey</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">QueryKey</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
-        <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Returns the stored value for `key`, if present.
+    ///
+    /// This function does not touch the key, preserving its current position in
+    /// the lru cache.
+    </span><span class="kw">pub fn </span>get_without_update&lt;QueryKey&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>QueryKey) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Value&gt;
+    <span class="kw">where
+        </span>QueryKey: Ord + <span class="question-mark">?</span>Sized,
+        Key: Borrow&lt;QueryKey&gt;,
     {
-        <span class="self">self</span>.<span class="ident">map</span>
-            .<span class="ident">get</span>(<span class="ident">key</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">node</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">get_without_touch</span>(<span class="kw-2">*</span><span class="ident">node</span>).<span class="ident">value</span>())
+        <span class="self">self</span>.map
+            .get(key)
+            .map(|node| <span class="self">self</span>.cache.get_without_touch(<span class="kw-2">*</span>node).value())
     }
 
-    <span class="doccomment">/// Returns an [`EntryRef`] for `key`, if present.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function does not touch the key, preserving its current position in</span>
-    <span class="doccomment">/// the lru cache. The [`EntryRef`] can touch the key, depending on which</span>
-    <span class="doccomment">/// functions are used.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lrumap::{LruBTreeMap, LruMap, Removed};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut lru = LruBTreeMap::new(3);</span>
-    <span class="doccomment">/// lru.push(1, 1);</span>
-    <span class="doccomment">/// lru.push(2, 2);</span>
-    <span class="doccomment">/// lru.push(3, 3);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // The cache has been updated once since entry 2 was touched.</span>
-    <span class="doccomment">/// let mut entry = lru.entry(&amp;2).unwrap();</span>
-    <span class="doccomment">/// assert_eq!(entry.staleness(), 1);</span>
-    <span class="doccomment">/// // Peeking the value will not update the entry&#39;s position.</span>
-    <span class="doccomment">/// assert_eq!(entry.peek_value(), &amp;2);</span>
-    <span class="doccomment">/// assert_eq!(entry.staleness(), 1);</span>
-    <span class="doccomment">/// // Querying the value or touching the entry will move it to the</span>
-    <span class="doccomment">/// // front of the cache.</span>
-    <span class="doccomment">/// assert_eq!(entry.value(), &amp;2);</span>
-    <span class="doccomment">/// assert_eq!(entry.staleness(), 0);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(lru.head().unwrap().key(), &amp;2);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entry</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">QueryKey</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntryRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="self">Self</span>, <span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">QueryKey</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
-        <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Returns an [`EntryRef`] for `key`, if present.
+    ///
+    /// This function does not touch the key, preserving its current position in
+    /// the lru cache. The [`EntryRef`] can touch the key, depending on which
+    /// functions are used.
+    ///
+    /// ```rust
+    /// use lrumap::{LruBTreeMap, LruMap, Removed};
+    ///
+    /// let mut lru = LruBTreeMap::new(3);
+    /// lru.push(1, 1);
+    /// lru.push(2, 2);
+    /// lru.push(3, 3);
+    ///
+    /// // The cache has been updated once since entry 2 was touched.
+    /// let mut entry = lru.entry(&amp;2).unwrap();
+    /// assert_eq!(entry.staleness(), 1);
+    /// // Peeking the value will not update the entry&#39;s position.
+    /// assert_eq!(entry.peek_value(), &amp;2);
+    /// assert_eq!(entry.staleness(), 1);
+    /// // Querying the value or touching the entry will move it to the
+    /// // front of the cache.
+    /// assert_eq!(entry.value(), &amp;2);
+    /// assert_eq!(entry.staleness(), 0);
+    ///
+    /// assert_eq!(lru.head().unwrap().key(), &amp;2);
+    /// ```
+    </span><span class="kw">pub fn </span>entry&lt;QueryKey&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>QueryKey) -&gt; <span class="prelude-ty">Option</span>&lt;EntryRef&lt;<span class="lifetime">&#39;_</span>, <span class="self">Self</span>, Key, Value&gt;&gt;
+    <span class="kw">where
+        </span>QueryKey: Ord + <span class="question-mark">?</span>Sized,
+        Key: Borrow&lt;QueryKey&gt;,
     {
-        <span class="self">self</span>.<span class="ident">map</span>
-            .<span class="ident">get</span>(<span class="ident">key</span>)
-            .<span class="ident">copied</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">node</span><span class="op">|</span> <span class="ident">EntryRef::new</span>(<span class="self">self</span>, <span class="ident">node</span>))
+        <span class="self">self</span>.map
+            .get(key)
+            .copied()
+            .map(|node| EntryRef::new(<span class="self">self</span>, node))
     }
 
-    <span class="doccomment">/// Inserts `value` for `key` into this map. If a value is already stored</span>
-    <span class="doccomment">/// for this key, [`Removed::PreviousValue`] is returned with the previously</span>
-    <span class="doccomment">/// stored value. If no value is currently stored and the map is full, the</span>
-    <span class="doccomment">/// least recently used entry will be returned in [`Removed::Evicted`].</span>
-    <span class="doccomment">/// Otherwise, `None` will be returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function touches the key, making it the most recently used key.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lrumap::{LruBTreeMap, LruMap, Removed};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut lru = LruBTreeMap::new(3);</span>
-    <span class="doccomment">/// lru.push(1, 1);</span>
-    <span class="doccomment">/// lru.push(2, 2);</span>
-    <span class="doccomment">/// lru.push(3, 3);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // The cache is now full. The next push will evict an entry.</span>
-    <span class="doccomment">/// let removed = lru.push(4, 4);</span>
-    <span class="doccomment">/// assert_eq!(removed, Some(Removed::Evicted(1, 1)));</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // This leaves the cache with 4 as the most recent key, and 2 as the</span>
-    <span class="doccomment">/// // least recent key.</span>
-    <span class="doccomment">/// assert_eq!(lru.head().unwrap().key(), &amp;4);</span>
-    <span class="doccomment">/// assert_eq!(lru.tail().unwrap().key(), &amp;2);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">Key</span>, <span class="ident">value</span>: <span class="ident">Value</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Removed</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="comment">// Create the new entry for this key/value pair, which also puts it at</span>
-        <span class="comment">// the front of the LRU</span>
-        <span class="comment">// let existing_entry = self.map.entry(key.clone());</span>
-        <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">entry</span>(<span class="ident">key</span>.<span class="ident">clone</span>());
+    <span class="doccomment">/// Inserts `value` for `key` into this map. If a value is already stored
+    /// for this key, [`Removed::PreviousValue`] is returned with the previously
+    /// stored value. If no value is currently stored and the map is full, the
+    /// least recently used entry will be returned in [`Removed::Evicted`].
+    /// Otherwise, `None` will be returned.
+    ///
+    /// This function touches the key, making it the most recently used key.
+    ///
+    /// ```rust
+    /// use lrumap::{LruBTreeMap, LruMap, Removed};
+    ///
+    /// let mut lru = LruBTreeMap::new(3);
+    /// lru.push(1, 1);
+    /// lru.push(2, 2);
+    /// lru.push(3, 3);
+    ///
+    /// // The cache is now full. The next push will evict an entry.
+    /// let removed = lru.push(4, 4);
+    /// assert_eq!(removed, Some(Removed::Evicted(1, 1)));
+    ///
+    /// // This leaves the cache with 4 as the most recent key, and 2 as the
+    /// // least recent key.
+    /// assert_eq!(lru.head().unwrap().key(), &amp;4);
+    /// assert_eq!(lru.tail().unwrap().key(), &amp;2);
+    /// ```
+    </span><span class="kw">pub fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: Key, value: Value) -&gt; <span class="prelude-ty">Option</span>&lt;Removed&lt;Key, Value&gt;&gt; {
+        <span class="comment">// Create the new entry for this key/value pair, which also puts it at
+        // the front of the LRU
+        // let existing_entry = self.map.entry(key.clone());
+        </span><span class="kw">let </span>entry = <span class="self">self</span>.map.entry(key.clone());
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">btree_map::Entry::Occupied</span>(<span class="ident">entry</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">entry</span> {
-            <span class="kw">let</span> <span class="ident">node_ref</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">entry</span>.<span class="ident">get</span>();
-            <span class="comment">// Swap the value out.</span>
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">get_mut</span>(<span class="ident">node_ref</span>).<span class="ident">replace_value</span>(<span class="ident">value</span>);
+        <span class="kw">if let </span>btree_map::Entry::Occupied(entry) = <span class="kw-2">&amp;</span>entry {
+            <span class="kw">let </span>node_ref = <span class="kw-2">*</span>entry.get();
+            <span class="comment">// Swap the value out.
+            </span><span class="kw">let </span>value = <span class="self">self</span>.cache.get_mut(node_ref).replace_value(value);
 
-            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">Removed::PreviousValue</span>(<span class="ident">value</span>));
+            <span class="kw">return </span><span class="prelude-val">Some</span>(Removed::PreviousValue(value));
         }
 
-        <span class="comment">// Key is not currently contained. Create a new node.</span>
-        <span class="kw">let</span> (<span class="ident">node</span>, <span class="ident">result</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">push</span>(<span class="ident">key</span>, <span class="ident">value</span>);
+        <span class="comment">// Key is not currently contained. Create a new node.
+        </span><span class="kw">let </span>(node, result) = <span class="self">self</span>.cache.push(key, value);
 
-        <span class="comment">// Insert the node into the BTreeMap</span>
-        <span class="ident">entry</span>.<span class="ident">or_insert</span>(<span class="ident">node</span>);
+        <span class="comment">// Insert the node into the BTreeMap
+        </span>entry.or_insert(node);
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">Removed::Evicted</span>(<span class="ident">key</span>, <span class="kw">_</span>)) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">result</span> {
-            <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">remove</span>(<span class="ident">key</span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(Removed::Evicted(key, <span class="kw">_</span>)) = <span class="kw-2">&amp;</span>result {
+            <span class="self">self</span>.map.remove(key);
         }
 
-        <span class="ident">result</span>
+        result
     }
 
-    <span class="doccomment">/// Pushes all items from `iterator` into this map. If there are more</span>
-    <span class="doccomment">/// entries in the iterator than capacity remaining, keys will be evicted as</span>
-    <span class="doccomment">/// needed.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function is equivalent to a for loop calling [`Self::push()`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lrumap::{LruBTreeMap, LruMap};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut lru = LruBTreeMap::new(3);</span>
-    <span class="doccomment">/// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4)]);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(lru.head().unwrap().key(), &amp;4);</span>
-    <span class="doccomment">/// assert_eq!(lru.tail().unwrap().key(), &amp;2);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">extend</span><span class="op">&lt;</span><span class="ident">IntoIter</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">Key</span>, <span class="ident">Value</span>)<span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">iterator</span>: <span class="ident">IntoIter</span>) {
-        <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">iterator</span> {
-            <span class="kw">let</span> (<span class="ident">node_id</span>, <span class="ident">removed</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">push</span>(<span class="ident">key</span>.<span class="ident">clone</span>(), <span class="ident">value</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">Removed::Evicted</span>(<span class="ident">evicted_key</span>, <span class="kw">_</span>)) <span class="op">=</span> <span class="ident">removed</span> {
-                <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">evicted_key</span>);
+    <span class="doccomment">/// Pushes all items from `iterator` into this map. If there are more
+    /// entries in the iterator than capacity remaining, keys will be evicted as
+    /// needed.
+    ///
+    /// This function is equivalent to a for loop calling [`Self::push()`].
+    ///
+    /// ```rust
+    /// use lrumap::{LruBTreeMap, LruMap};
+    ///
+    /// let mut lru = LruBTreeMap::new(3);
+    /// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4)]);
+    ///
+    /// assert_eq!(lru.head().unwrap().key(), &amp;4);
+    /// assert_eq!(lru.tail().unwrap().key(), &amp;2);
+    /// ```
+    </span><span class="kw">pub fn </span>extend&lt;IntoIter: IntoIterator&lt;Item = (Key, Value)&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, iterator: IntoIter) {
+        <span class="kw">for </span>(key, value) <span class="kw">in </span>iterator {
+            <span class="kw">let </span>(node_id, removed) = <span class="self">self</span>.cache.push(key.clone(), value);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(Removed::Evicted(evicted_key, <span class="kw">_</span>)) = removed {
+                <span class="self">self</span>.map.remove(<span class="kw-2">&amp;</span>evicted_key);
             }
-            <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">node_id</span>);
+            <span class="self">self</span>.map.insert(key, node_id);
         }
     }
 
-    <span class="doccomment">/// Returns the most recently touched entry with a key within `range`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function uses [`BTreeMap::range`] to identify all entries that</span>
-    <span class="doccomment">/// match the given range. For each returned entry, the entry&#39;s</span>
-    <span class="doccomment">/// [staleness](EntryRef::staleness) is compared, and the least stale entry</span>
-    <span class="doccomment">/// is returned. If no keys match the range, `None` is returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function does not touch any keys, preserving the current order of</span>
-    <span class="doccomment">/// the lru cache. The [`EntryRef`] returned can be used to peek, touch, or</span>
-    <span class="doccomment">/// remove the entry.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lrumap::LruBTreeMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut lru = LruBTreeMap::new(5);</span>
-    <span class="doccomment">/// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &amp;4);</span>
-    <span class="doccomment">/// // Change the order by retrieving key 2.</span>
-    <span class="doccomment">/// lru.get(&amp;2);</span>
-    <span class="doccomment">/// assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &amp;2);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">most_recent_in_range</span><span class="op">&lt;</span><span class="ident">QueryKey</span>, <span class="ident">Range</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">range</span>: <span class="ident">Range</span>,
-    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntryRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="self">Self</span>, <span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">QueryKey</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
-        <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
-        <span class="ident">Range</span>: <span class="ident">RangeBounds</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Returns the most recently touched entry with a key within `range`.
+    ///
+    /// This function uses [`BTreeMap::range`] to identify all entries that
+    /// match the given range. For each returned entry, the entry&#39;s
+    /// [staleness](EntryRef::staleness) is compared, and the least stale entry
+    /// is returned. If no keys match the range, `None` is returned.
+    ///
+    /// This function does not touch any keys, preserving the current order of
+    /// the lru cache. The [`EntryRef`] returned can be used to peek, touch, or
+    /// remove the entry.
+    ///
+    /// ```rust
+    /// use lrumap::LruBTreeMap;
+    ///
+    /// let mut lru = LruBTreeMap::new(5);
+    /// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);
+    ///
+    /// assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &amp;4);
+    /// // Change the order by retrieving key 2.
+    /// lru.get(&amp;2);
+    /// assert_eq!(lru.most_recent_in_range(2..=4).unwrap().key(), &amp;2);
+    /// ```
+    </span><span class="kw">pub fn </span>most_recent_in_range&lt;QueryKey, Range&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        range: Range,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;EntryRef&lt;<span class="lifetime">&#39;_</span>, <span class="self">Self</span>, Key, Value&gt;&gt;
+    <span class="kw">where
+        </span>QueryKey: Ord + <span class="question-mark">?</span>Sized,
+        Key: Borrow&lt;QueryKey&gt;,
+        Range: RangeBounds&lt;QueryKey&gt;,
     {
-        <span class="self">self</span>.<span class="ident">most_recent_in_range_where</span>(<span class="ident">range</span>, <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> <span class="bool-val">true</span>)
+        <span class="self">self</span>.most_recent_in_range_where(range, |<span class="kw">_</span>, <span class="kw">_</span>| <span class="bool-val">true</span>)
     }
 
-    <span class="doccomment">/// Returns the most recently touched entry with a key within `range` that</span>
-    <span class="doccomment">/// passes the `condition` check.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function uses [`BTreeMap::range`] to identify all entries that</span>
-    <span class="doccomment">/// match the given range. Each key and value that matches is passed to</span>
-    <span class="doccomment">/// `condition`. For each entry where `condition` returns true, the</span>
-    <span class="doccomment">/// [staleness](EntryRef::staleness) is compared, and the least stale entry</span>
-    <span class="doccomment">/// is returned. If no keys match the range, `None` is returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function does not touch any keys, preserving the current order of</span>
-    <span class="doccomment">/// the lru cache. The [`EntryRef`] returned can be used to peek, touch, or</span>
-    <span class="doccomment">/// remove the entry.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lrumap::LruBTreeMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut lru = LruBTreeMap::&lt;u32, u16&gt;::new(5);</span>
-    <span class="doccomment">/// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let condition = |key: &amp;u32, value: &amp;u16| key == &amp;3 || value == &amp;4;</span>
-    <span class="doccomment">/// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &amp;4);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // Change the order by retrieving key 2. However, 2 doesn&#39;t meet the</span>
-    <span class="doccomment">/// // condition, so the result is unchanged.</span>
-    <span class="doccomment">/// lru.get(&amp;2);</span>
-    <span class="doccomment">/// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &amp;4);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // Request 3, moving it to the front. Since 3 matches the condition, the</span>
-    <span class="doccomment">/// // result is now 3.</span>
-    <span class="doccomment">/// lru.get(&amp;3);</span>
-    <span class="doccomment">/// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &amp;3);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">most_recent_in_range_where</span><span class="op">&lt;</span><span class="ident">QueryKey</span>, <span class="ident">Range</span>, <span class="ident">Condition</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">range</span>: <span class="ident">Range</span>,
-        <span class="kw-2">mut</span> <span class="ident">condition</span>: <span class="ident">Condition</span>,
-    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntryRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="self">Self</span>, <span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">QueryKey</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
-        <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
-        <span class="ident">Range</span>: <span class="ident">RangeBounds</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>,
-        <span class="ident">Condition</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;key</span>, <span class="lifetime">&#39;value</span><span class="op">&gt;</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;key</span> <span class="ident">Key</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;value</span> <span class="ident">Value</span>) -&gt; <span class="ident">bool</span>,
+    <span class="doccomment">/// Returns the most recently touched entry with a key within `range` that
+    /// passes the `condition` check.
+    ///
+    /// This function uses [`BTreeMap::range`] to identify all entries that
+    /// match the given range. Each key and value that matches is passed to
+    /// `condition`. For each entry where `condition` returns true, the
+    /// [staleness](EntryRef::staleness) is compared, and the least stale entry
+    /// is returned. If no keys match the range, `None` is returned.
+    ///
+    /// This function does not touch any keys, preserving the current order of
+    /// the lru cache. The [`EntryRef`] returned can be used to peek, touch, or
+    /// remove the entry.
+    ///
+    /// ```rust
+    /// use lrumap::LruBTreeMap;
+    ///
+    /// let mut lru = LruBTreeMap::&lt;u32, u16&gt;::new(5);
+    /// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);
+    ///
+    /// let condition = |key: &amp;u32, value: &amp;u16| key == &amp;3 || value == &amp;4;
+    /// assert_eq!(
+    ///     lru.most_recent_in_range_where(2..=4, condition)
+    ///         .unwrap()
+    ///         .key(),
+    ///     &amp;4
+    /// );
+    ///
+    /// // Change the order by retrieving key 2. However, 2 doesn&#39;t meet the
+    /// // condition, so the result is unchanged.
+    /// lru.get(&amp;2);
+    /// assert_eq!(
+    ///     lru.most_recent_in_range_where(2..=4, condition)
+    ///         .unwrap()
+    ///         .key(),
+    ///     &amp;4
+    /// );
+    ///
+    /// // Request 3, moving it to the front. Since 3 matches the condition, the
+    /// // result is now 3.
+    /// lru.get(&amp;3);
+    /// assert_eq!(
+    ///     lru.most_recent_in_range_where(2..=4, condition)
+    ///         .unwrap()
+    ///         .key(),
+    ///     &amp;3
+    /// );
+    /// ```
+    </span><span class="kw">pub fn </span>most_recent_in_range_where&lt;QueryKey, Range, Condition&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        range: Range,
+        <span class="kw-2">mut </span>condition: Condition,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;EntryRef&lt;<span class="lifetime">&#39;_</span>, <span class="self">Self</span>, Key, Value&gt;&gt;
+    <span class="kw">where
+        </span>QueryKey: Ord + <span class="question-mark">?</span>Sized,
+        Key: Borrow&lt;QueryKey&gt;,
+        Range: RangeBounds&lt;QueryKey&gt;,
+        Condition: <span class="kw">for</span>&lt;<span class="lifetime">&#39;key</span>, <span class="lifetime">&#39;value</span>&gt; FnMut(<span class="kw-2">&amp;</span><span class="lifetime">&#39;key </span>Key, <span class="kw-2">&amp;</span><span class="lifetime">&#39;value </span>Value) -&gt; bool,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">closest_node</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">closest_staleness</span> <span class="op">=</span> <span class="ident">usize::MAX</span>;
-        <span class="kw">for</span> (<span class="kw">_</span>, <span class="kw-2">&amp;</span><span class="ident">node_id</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">range</span>(<span class="ident">range</span>) {
-            <span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">get_without_touch</span>(<span class="ident">node_id</span>);
-            <span class="kw">if</span> <span class="ident">condition</span>(<span class="ident">node</span>.<span class="ident">key</span>(), <span class="ident">node</span>.<span class="ident">value</span>()) {
-                <span class="kw">let</span> <span class="ident">staleness</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">sequence</span>().<span class="ident">wrapping_sub</span>(<span class="ident">node</span>.<span class="ident">last_accessed</span>());
-                <span class="kw">if</span> <span class="ident">staleness</span> <span class="op">&lt;</span> <span class="ident">closest_staleness</span> {
-                    <span class="ident">closest_staleness</span> <span class="op">=</span> <span class="ident">staleness</span>;
-                    <span class="ident">closest_node</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">node_id</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>closest_node = <span class="prelude-val">None</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>closest_staleness = usize::MAX;
+        <span class="kw">for </span>(<span class="kw">_</span>, <span class="kw-2">&amp;</span>node_id) <span class="kw">in </span><span class="self">self</span>.map.range(range) {
+            <span class="kw">let </span>node = <span class="self">self</span>.cache.get_without_touch(node_id);
+            <span class="kw">if </span>condition(node.key(), node.value()) {
+                <span class="kw">let </span>staleness = <span class="self">self</span>.cache.sequence().wrapping_sub(node.last_accessed());
+                <span class="kw">if </span>staleness &lt; closest_staleness {
+                    closest_staleness = staleness;
+                    closest_node = <span class="prelude-val">Some</span>(node_id);
                 }
             }
         }
-        <span class="ident">closest_node</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">node</span><span class="op">|</span> <span class="ident">EntryRef::new</span>(<span class="self">self</span>, <span class="ident">node</span>))
+        closest_node.map(|node| EntryRef::new(<span class="self">self</span>, node))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> <span class="ident">LruMap</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LruBTreeMap</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">Key</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;Key, Value&gt; LruMap&lt;Key, Value&gt; <span class="kw">for </span>LruBTreeMap&lt;Key, Value&gt;
+<span class="kw">where
+    </span>Key: Ord + Clone,
 {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">capacity</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">capacity</span>)
+    <span class="kw">fn </span>new(capacity: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(capacity)
     }
 
-    <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">len</span>()
+    <span class="kw">fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.cache.len()
     }
 
-    <span class="kw">fn</span> <span class="ident">head</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntryRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="self">Self</span>, <span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">head</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">node</span><span class="op">|</span> <span class="ident">EntryRef::new</span>(<span class="self">self</span>, <span class="ident">node</span>))
+    <span class="kw">fn </span>head(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;EntryRef&lt;<span class="lifetime">&#39;_</span>, <span class="self">Self</span>, Key, Value&gt;&gt; {
+        <span class="self">self</span>.cache.head().map(|node| EntryRef::new(<span class="self">self</span>, node))
     }
 
-    <span class="kw">fn</span> <span class="ident">tail</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntryRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="self">Self</span>, <span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">tail</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">node</span><span class="op">|</span> <span class="ident">EntryRef::new</span>(<span class="self">self</span>, <span class="ident">node</span>))
+    <span class="kw">fn </span>tail(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;EntryRef&lt;<span class="lifetime">&#39;_</span>, <span class="self">Self</span>, Key, Value&gt;&gt; {
+        <span class="self">self</span>.cache.tail().map(|node| EntryRef::new(<span class="self">self</span>, node))
     }
 
-    <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident"><span class="kw">crate</span>::lru::Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">iter</span>()
+    <span class="kw">fn </span>iter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">crate</span>::lru::Iter&lt;<span class="lifetime">&#39;_</span>, Key, Value&gt; {
+        <span class="self">self</span>.cache.iter()
     }
 
-    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">QueryKey</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">QueryKey</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
-        <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>,
+    <span class="kw">fn </span>get&lt;QueryKey&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>QueryKey) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Value&gt;
+    <span class="kw">where
+        </span>QueryKey: Ord + Hash + Eq + <span class="question-mark">?</span>Sized,
+        Key: Borrow&lt;QueryKey&gt; + Ord + Eq + Hash,
     {
-        <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">key</span>)
+        <span class="self">self</span>.get(key)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_without_update</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">QueryKey</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">QueryKey</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
-        <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>,
+    <span class="kw">fn </span>get_without_update&lt;QueryKey&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>QueryKey) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Value&gt;
+    <span class="kw">where
+        </span>QueryKey: Ord + Hash + Eq + <span class="question-mark">?</span>Sized,
+        Key: Borrow&lt;QueryKey&gt; + Ord + Eq + Hash,
     {
-        <span class="self">self</span>.<span class="ident">get_without_update</span>(<span class="ident">key</span>)
+        <span class="self">self</span>.get_without_update(key)
     }
 
-    <span class="kw">fn</span> <span class="ident">entry</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">QueryKey</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntryRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="self">Self</span>, <span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">QueryKey</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
-        <span class="ident">Key</span>: <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">QueryKey</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>,
+    <span class="kw">fn </span>entry&lt;QueryKey&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>QueryKey) -&gt; <span class="prelude-ty">Option</span>&lt;EntryRef&lt;<span class="lifetime">&#39;_</span>, <span class="self">Self</span>, Key, Value&gt;&gt;
+    <span class="kw">where
+        </span>QueryKey: Ord + Hash + Eq + <span class="question-mark">?</span>Sized,
+        Key: Borrow&lt;QueryKey&gt; + Ord + Eq + Hash,
     {
-        <span class="self">self</span>.<span class="ident">entry</span>(<span class="ident">key</span>)
+        <span class="self">self</span>.entry(key)
     }
 
-    <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">Key</span>, <span class="ident">value</span>: <span class="ident">Value</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Removed</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">push</span>(<span class="ident">key</span>, <span class="ident">value</span>)
+    <span class="kw">fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: Key, value: Value) -&gt; <span class="prelude-ty">Option</span>&lt;Removed&lt;Key, Value&gt;&gt; {
+        <span class="self">self</span>.push(key, value)
     }
 
-    <span class="kw">fn</span> <span class="ident">extend</span><span class="op">&lt;</span><span class="ident">IntoIter</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">Key</span>, <span class="ident">Value</span>)<span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">iterator</span>: <span class="ident">IntoIter</span>) {
-        <span class="self">self</span>.<span class="ident">extend</span>(<span class="ident">iterator</span>);
+    <span class="kw">fn </span>extend&lt;IntoIter: IntoIterator&lt;Item = (Key, Value)&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, iterator: IntoIter) {
+        <span class="self">self</span>.extend(iterator);
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> <span class="ident">EntryCache</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LruBTreeMap</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">Key</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;Key, Value&gt; EntryCache&lt;Key, Value&gt; <span class="kw">for </span>LruBTreeMap&lt;Key, Value&gt;
+<span class="kw">where
+    </span>Key: Ord + Clone,
 {
-    <span class="kw">fn</span> <span class="ident">cache</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">LruCache</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>
+    <span class="kw">fn </span>cache(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>LruCache&lt;Key, Value&gt; {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.cache
     }
 
-    <span class="kw">fn</span> <span class="ident">cache_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">LruCache</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> {
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">cache</span>
+    <span class="kw">fn </span>cache_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>LruCache&lt;Key, Value&gt; {
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>.cache
     }
 
-    <span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="ident">NodeId</span>) -&gt; ((<span class="ident">Key</span>, <span class="ident">Value</span>), <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NodeId</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NodeId</span><span class="op">&gt;</span>) {
-        <span class="kw">let</span> ((<span class="ident">key</span>, <span class="ident">value</span>), <span class="ident">next</span>, <span class="ident">previous</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">remove</span>(<span class="ident">node</span>);
-        <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
-        ((<span class="ident">key</span>, <span class="ident">value</span>), <span class="ident">next</span>, <span class="ident">previous</span>)
+    <span class="kw">fn </span>remove(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: NodeId) -&gt; ((Key, Value), <span class="prelude-ty">Option</span>&lt;NodeId&gt;, <span class="prelude-ty">Option</span>&lt;NodeId&gt;) {
+        <span class="kw">let </span>((key, value), next, previous) = <span class="self">self</span>.cache.remove(node);
+        <span class="self">self</span>.map.remove(<span class="kw-2">&amp;</span>key);
+        ((key, value), next, previous)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="ident">LruBTreeMap</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">Key</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;Key, Value&gt; IntoIterator <span class="kw">for </span>LruBTreeMap&lt;Key, Value&gt;
+<span class="kw">where
+    </span>Key: Ord + Clone,
 {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">Key</span>, <span class="ident">Value</span>);
+    <span class="kw">type </span>IntoIter = IntoIter&lt;Key, Value&gt;;
+    <span class="kw">type </span>Item = (Key, Value);
 
-    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">IntoIter</span><span class="op">&lt;</span><span class="ident">Key</span>, <span class="ident">Value</span><span class="op">&gt;</span>;
-
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::IntoIter</span> {
-        <span class="ident">IntoIter::from</span>(<span class="self">self</span>.<span class="ident">cache</span>)
+    <span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
+        IntoIter::from(<span class="self">self</span>.cache)
     }
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">most_recent_in_range_test</span>() {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lru</span> <span class="op">=</span> <span class="ident">LruBTreeMap::new</span>(<span class="number">5</span>);
-    <span class="ident">lru</span>.<span class="ident">extend</span>([(<span class="number">1</span>, <span class="number">1</span>), (<span class="number">2</span>, <span class="number">2</span>), (<span class="number">3</span>, <span class="number">3</span>), (<span class="number">4</span>, <span class="number">4</span>), (<span class="number">5</span>, <span class="number">5</span>)]);
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>most_recent_in_range_test() {
+    <span class="kw">let </span><span class="kw-2">mut </span>lru = LruBTreeMap::new(<span class="number">5</span>);
+    lru.extend([(<span class="number">1</span>, <span class="number">1</span>), (<span class="number">2</span>, <span class="number">2</span>), (<span class="number">3</span>, <span class="number">3</span>), (<span class="number">4</span>, <span class="number">4</span>), (<span class="number">5</span>, <span class="number">5</span>)]);
 
-    <span class="macro">assert_eq!</span>(<span class="ident">lru</span>.<span class="ident">most_recent_in_range</span>(<span class="number">2</span>..<span class="op">=</span><span class="number">4</span>).<span class="ident">unwrap</span>().<span class="ident">key</span>(), <span class="kw-2">&amp;</span><span class="number">4</span>);
-    <span class="ident">lru</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="number">2</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">lru</span>.<span class="ident">most_recent_in_range</span>(<span class="number">2</span>..<span class="op">=</span><span class="number">4</span>).<span class="ident">unwrap</span>().<span class="ident">key</span>(), <span class="kw-2">&amp;</span><span class="number">2</span>);
+    <span class="macro">assert_eq!</span>(lru.most_recent_in_range(<span class="number">2</span>..=<span class="number">4</span>).unwrap().key(), <span class="kw-2">&amp;</span><span class="number">4</span>);
+    lru.get(<span class="kw-2">&amp;</span><span class="number">2</span>);
+    <span class="macro">assert_eq!</span>(lru.most_recent_in_range(<span class="number">2</span>..=<span class="number">4</span>).unwrap().key(), <span class="kw-2">&amp;</span><span class="number">2</span>);
     <span class="macro">assert_eq!</span>(
-        <span class="ident">lru</span>.<span class="ident">most_recent_in_range_where</span>(<span class="number">2</span>..<span class="op">=</span><span class="number">4</span>, <span class="op">|</span><span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>, <span class="ident">_value</span>: <span class="kw-2">&amp;</span><span class="ident">u16</span><span class="op">|</span> <span class="ident">key</span> <span class="op">!</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="number">2</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">key</span>(),
-        <span class="kw-2">&amp;</span><span class="number">4</span>
-    );
+        lru.most_recent_in_range_where(<span class="number">2</span>..=<span class="number">4</span>, |key: <span class="kw-2">&amp;</span>u32, _value: <span class="kw-2">&amp;</span>u16| key != <span class="kw-2">&amp;</span><span class="number">2</span>)
+            .unwrap()
+            .key(),
+        <span class="kw-2">&amp;</span><span class="number">4
+    </span>);
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lrumap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lrumap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

@@ -1,3 +1,3 @@
-(function() {var implementors = {};
-implementors["lrumap"] = [{"text":"impl&lt;Key, Value&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.61.0/core/marker/trait.StructuralPartialEq.html\" title=\"trait core::marker::StructuralPartialEq\">StructuralPartialEq</a> for <a class=\"enum\" href=\"lrumap/enum.Removed.html\" title=\"enum lrumap::Removed\">Removed</a>&lt;Key, Value&gt;","synthetic":false,"types":["lrumap::lru::Removed"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"lrumap":[["impl&lt;Key, Value&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.66.1/core/marker/trait.StructuralPartialEq.html\" title=\"trait core::marker::StructuralPartialEq\">StructuralPartialEq</a> for <a class=\"enum\" href=\"lrumap/enum.Removed.html\" title=\"enum lrumap::Removed\">Removed</a>&lt;Key, Value&gt;"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
