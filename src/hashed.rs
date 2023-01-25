@@ -1,10 +1,8 @@
+use std::borrow::Borrow;
 #[cfg(not(feature = "hashbrown"))]
 use std::collections::{hash_map, hash_map::RandomState as DefaultState, HashMap};
-use std::{
-    borrow::Borrow,
-    fmt::Debug,
-    hash::{BuildHasher, Hash},
-};
+use std::fmt::Debug;
+use std::hash::{BuildHasher, Hash};
 
 #[cfg(feature = "hashbrown")]
 use hashbrown::{
@@ -12,10 +10,8 @@ use hashbrown::{
     HashMap,
 };
 
-use crate::{
-    lru::{EntryCache, EntryRef, IntoIter, LruCache, NodeId, Removed},
-    LruMap,
-};
+use crate::lru::{EntryCache, EntryRef, IntoIter, LruCache, NodeId, Removed};
+use crate::LruMap;
 
 /// A Least Recently Used map with fixed capacity that stores keys using a
 /// `HashMap` internally. Inserting and querying has similar performance to
@@ -303,9 +299,8 @@ where
     Key: Hash + Eq + Clone,
     State: BuildHasher,
 {
-    type Item = (Key, Value);
-
     type IntoIter = IntoIter<Key, Value>;
+    type Item = (Key, Value);
 
     fn into_iter(self) -> Self::IntoIter {
         IntoIter::from(self.cache)

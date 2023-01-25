@@ -1,5 +1,6 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use rand::{prelude::SliceRandom, thread_rng};
+use rand::prelude::SliceRandom;
+use rand::thread_rng;
 
 fn benchmark(c: &mut Criterion) {
     push(c);

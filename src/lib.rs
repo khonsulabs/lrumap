@@ -21,14 +21,13 @@ mod hashed;
 mod lru;
 mod ordered;
 
-use std::{borrow::Borrow, hash::Hash};
+use std::borrow::Borrow;
+use std::hash::Hash;
 
+pub use crate::hashed::*;
 use crate::lru::{EntryCache, IntoIter};
-pub use crate::{
-    hashed::*,
-    lru::{EntryRef, Iter, Removed},
-    ordered::*,
-};
+pub use crate::lru::{EntryRef, Iter, Removed};
+pub use crate::ordered::*;
 
 /// A Least Recently Used map interface that supports all map implementations
 /// exposed by this crate.

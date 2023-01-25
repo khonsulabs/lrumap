@@ -1,4 +1,6 @@
-use std::{collections::HashSet, fmt::Debug, marker::PhantomData};
+use std::collections::HashSet;
+use std::fmt::Debug;
+use std::marker::PhantomData;
 
 pub struct LruCache<Key, Value> {
     nodes: Vec<Node<Key, Value>>,

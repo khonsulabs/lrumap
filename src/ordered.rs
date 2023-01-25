@@ -1,15 +1,11 @@
-use std::{
-    borrow::Borrow,
-    collections::{btree_map, BTreeMap},
-    fmt::Debug,
-    hash::Hash,
-    ops::RangeBounds,
-};
+use std::borrow::Borrow;
+use std::collections::{btree_map, BTreeMap};
+use std::fmt::Debug;
+use std::hash::Hash;
+use std::ops::RangeBounds;
 
-use crate::{
-    lru::{EntryCache, EntryRef, IntoIter, LruCache, NodeId, Removed},
-    LruMap,
-};
+use crate::lru::{EntryCache, EntryRef, IntoIter, LruCache, NodeId, Removed};
+use crate::LruMap;
 
 /// A Least Recently Used map with fixed capacity that stores keys using a
 /// [`BTreeMap`] internally. Inserting and querying has similar performance to
@@ -242,17 +238,32 @@ where
     /// lru.extend([(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]);
     ///
     /// let condition = |key: &u32, value: &u16| key == &3 || value == &4;
-    /// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &4);
+    /// assert_eq!(
+    ///     lru.most_recent_in_range_where(2..=4, condition)
+    ///         .unwrap()
+    ///         .key(),
+    ///     &4
+    /// );
     ///
     /// // Change the order by retrieving key 2. However, 2 doesn't meet the
     /// // condition, so the result is unchanged.
     /// lru.get(&2);
-    /// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &4);
+    /// assert_eq!(
+    ///     lru.most_recent_in_range_where(2..=4, condition)
+    ///         .unwrap()
+    ///         .key(),
+    ///     &4
+    /// );
     ///
     /// // Request 3, moving it to the front. Since 3 matches the condition, the
     /// // result is now 3.
     /// lru.get(&3);
-    /// assert_eq!(lru.most_recent_in_range_where(2..=4, condition).unwrap().key(), &3);
+    /// assert_eq!(
+    ///     lru.most_recent_in_range_where(2..=4, condition)
+    ///         .unwrap()
+    ///         .key(),
+    ///     &3
+    /// );
     /// ```
     pub fn most_recent_in_range_where<QueryKey, Range, Condition>(
         &mut self,
@@ -361,9 +372,8 @@ impl<Key, Value> IntoIterator for LruBTreeMap<Key, Value>
 where
     Key: Ord + Clone,
 {
-    type Item = (Key, Value);
-
     type IntoIter = IntoIter<Key, Value>;
+    type Item = (Key, Value);
 
     fn into_iter(self) -> Self::IntoIter {
         IntoIter::from(self.cache)

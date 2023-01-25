@@ -1,7 +1,6 @@
-use khonsu_tools::{
-    publish,
-    universal::{anyhow, audit, clap::Parser, DefaultConfig},
-};
+use khonsu_tools::publish;
+use khonsu_tools::universal::clap::Parser;
+use khonsu_tools::universal::{anyhow, audit, DefaultConfig};
 
 fn main() -> anyhow::Result<()> {
     let command = khonsu_tools::Commands::parse();
@@ -12,13 +11,11 @@ enum Config {}
 
 impl khonsu_tools::Config for Config {
     type Publish = Self;
-
     type Universal = Self;
 }
 
 impl khonsu_tools::universal::Config for Config {
     type Audit = Self;
-
     type CodeCoverage = DefaultConfig;
 }
 
