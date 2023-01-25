@@ -34,7 +34,7 @@ where
     // at the start of the function.
     assert_eq!(lru.get(&5), Some(&5));
     assert_eq!(lru.head().unwrap().key(), &5);
-    println!("Final State: {:?}", lru);
+    println!("Final State: {lru:?}");
 }
 
 #[test]

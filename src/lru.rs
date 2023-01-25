@@ -204,12 +204,11 @@ where
             while seen_nodes.insert(current_node) {
                 let node = &self.nodes[current_node.as_usize()];
                 list.entry(node);
-                current_node = match node.next {
-                    Some(next) => next,
-                    None => {
-                        end_found = true;
-                        break;
-                    }
+                current_node = if let Some(next) = node.next {
+                    next
+                } else {
+                    end_found = true;
+                    break;
                 };
             }
 
@@ -231,8 +230,8 @@ impl<Key, Value> Entry<Key, Value> {
         let mut entry = Self::Vacant;
         std::mem::swap(&mut entry, self);
         match entry {
-            Entry::Occupied { key, value } => (key, value),
-            Entry::Vacant => unreachable!("evict called on a vacant entry"),
+            Self::Occupied { key, value } => (key, value),
+            Self::Vacant => unreachable!("evict called on a vacant entry"),
         }
     }
 }
@@ -521,16 +520,13 @@ impl<'a, Key, Value> Iterator for Iter<'a, Key, Value> {
             IterState::Node(node) => self.cache.nodes[node.as_usize()].next,
             IterState::AfterTail => None,
         };
-        match next_node {
-            Some(node_id) => {
-                let node = &self.cache.nodes[node_id.as_usize()];
-                self.node = IterState::Node(node_id);
-                Some((node.key(), node.value()))
-            }
-            None => {
-                self.node = IterState::AfterTail;
-                None
-            }
+        if let Some(node_id) = next_node {
+            let node = &self.cache.nodes[node_id.as_usize()];
+            self.node = IterState::Node(node_id);
+            Some((node.key(), node.value()))
+        } else {
+            self.node = IterState::AfterTail;
+            None
         }
     }
 }
@@ -543,16 +539,13 @@ impl<'a, Key, Value> DoubleEndedIterator for Iter<'a, Key, Value> {
             }
             IterState::AfterTail => self.cache.tail,
         };
-        match previous_node {
-            Some(node_id) => {
-                let node = &self.cache.nodes[node_id.as_usize()];
-                self.node = IterState::Node(node_id);
-                Some((node.key(), node.value()))
-            }
-            None => {
-                self.node = IterState::BeforeHead;
-                None
-            }
+        if let Some(node_id) = previous_node {
+            let node = &self.cache.nodes[node_id.as_usize()];
+            self.node = IterState::Node(node_id);
+            Some((node.key(), node.value()))
+        } else {
+            self.node = IterState::BeforeHead;
+            None
         }
     }
 }

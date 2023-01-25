@@ -18,6 +18,10 @@ use crate::{
 ///
 /// When inserting a new key and the map is at-capacity, the least recently used
 /// key will be evicted to make room for the new key.
+///
+/// To avoid `unsafe`, this crate must store each entry's key twice. This means
+/// that `Key` must implement `Clone`. If you're using expensive-to-clone keys,
+/// consider wrapping the key in an `Rc`/`Arc` or using an alternate LRU crate.
 #[derive(Debug)]
 #[must_use]
 pub struct LruBTreeMap<Key, Value> {
