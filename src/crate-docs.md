@@ -80,8 +80,8 @@ seemed to offer this functionality.
 [nebari]: https://github.com/khonsulabs/nebari
 [ecton]: https://github.com/ecton
 [most-recent-in-range]: https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruBTreeMap.html#method.most_recent_in_range
-[lruhashmap]: https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruHashMap.html
-[lrubtreemap]: https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruBTreeMap.html
+[lruhashmap]: https://docs.rs/lrumap/*/lrumap/struct.LruHashMap.html
+[lrubtreemap]: https://docs.rs/lrumap/*/lrumap/struct.LruBTreeMap.html
 [hashbrown]: https://docs.rs/hashbrown/latest/hashbrown/
 
 ## Open-source Licenses

@@ -5,7 +5,7 @@
 [![crate version](https://img.shields.io/crates/v/lrumap.svg)](https://crates.io/crates/lrumap)
 [![Live Build Status](https://img.shields.io/github/actions/workflow/status/khonsulabs/lrumap/tests.yml?branch=main)](https://github.com/khonsulabs/lrumap/actions?query=workflow:Tests)
 [![HTML Coverage Report for `main` branch](https://khonsulabs.github.io/lrumap/coverage/badge.svg)](https://khonsulabs.github.io/lrumap/coverage/)
-[![Documentation](https://img.shields.io/badge/docs-main-informational)](https://khonsulabs.github.io/lrumap/main/lrumap)
+[![Documentation](https://img.shields.io/badge/docs-main-informational)](https://docs.rs/lrumap)
 
 A set of safe Least-Recently-Used (LRU) cache types aimed at providing flexible
 map-like structures that automatically evict the least recently used key and
@@ -89,8 +89,8 @@ seemed to offer this functionality.
 [nebari]: https://github.com/khonsulabs/nebari
 [ecton]: https://github.com/ecton
 [most-recent-in-range]: https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruBTreeMap.html#method.most_recent_in_range
-[lruhashmap]: https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruHashMap.html
-[lrubtreemap]: https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruBTreeMap.html
+[lruhashmap]: https://docs.rs/lrumap/*/lrumap/struct.LruHashMap.html
+[lrubtreemap]: https://docs.rs/lrumap/*/lrumap/struct.LruBTreeMap.html
 [hashbrown]: https://docs.rs/hashbrown/latest/hashbrown/
 
 ## Open-source Licenses
