@@ -2,12 +2,11 @@
 map-like structures that automatically evict the least recently used key and
 value when its capacity is reached.</p>
 <h3 id="safety"><a href="#safety">Safety</a></h3>
-<p>This crate includes <code>#![forbid(unsafe)]</code>. To implement the <code>LruHashMap</code> and
-<code>LruBTreeMap</code> types, each entry’s <code>Key</code> type is stored twice, which requires the
+<p>This crate includes <code>#![forbid(unsafe)]</code>. To implement the <a href="https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruHashMap.html"><code>LruHashMap</code></a> and
+<a href="https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruBTreeMap.html"><code>LruBTreeMap</code></a> types, each entry’s <code>Key</code> type is stored twice, which requires the
 <code>Key</code> type to implement <code>Clone</code>. If the <code>Key</code> type is expensive to clone,
 consider wrapping it in an <code>Rc</code> or <code>Arc</code>, or consider an LRU implementation that
 uses <code>unsafe</code> to avoid this requirement.</p>
-<p>The base <code>LruMap</code> does not require <code>Key</code> to implement <code>Clone</code>.</p>
 <h3 id="lru-implementation"><a href="#lru-implementation">LRU Implementation</a></h3>
 <p>This crate utilizes an “arena”-style linked list implementation, where all nodes
 of the linked list are stored in a <code>Vec</code>. Instead of using pointers to the
