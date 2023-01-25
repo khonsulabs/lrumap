@@ -4,13 +4,11 @@ value when its capacity is reached.
 
 ## Safety
 
-This crate includes `#![forbid(unsafe)]`. To implement the `LruHashMap` and
-`LruBTreeMap` types, each entry's `Key` type is stored twice, which requires the
+This crate includes `#![forbid(unsafe)]`. To implement the [`LruHashMap`][lruhashmap] and
+[`LruBTreeMap`][lrubtreemap] types, each entry's `Key` type is stored twice, which requires the
 `Key` type to implement `Clone`. If the `Key` type is expensive to clone,
 consider wrapping it in an `Rc` or `Arc`, or consider an LRU implementation that
 uses `unsafe` to avoid this requirement.
-
-The base `LruMap` does not require `Key` to implement `Clone`.
 
 ## LRU Implementation
 

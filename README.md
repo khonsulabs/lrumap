@@ -5,7 +5,7 @@
 [![crate version](https://img.shields.io/crates/v/lrumap.svg)](https://crates.io/crates/lrumap)
 [![Live Build Status](https://img.shields.io/github/actions/workflow/status/khonsulabs/lrumap/tests.yml?branch=main)](https://github.com/khonsulabs/lrumap/actions?query=workflow:Tests)
 [![HTML Coverage Report for `main` branch](https://khonsulabs.github.io/lrumap/coverage/badge.svg)](https://khonsulabs.github.io/lrumap/coverage/)
-[![Documentation for `main` branch](https://img.shields.io/badge/docs-main-informational)](https://khonsulabs.github.io/lrumap/main/lrumap/)
+[![Documentation](https://img.shields.io/badge/docs-main-informational)](https://khonsulabs.github.io/lrumap/main/lrumap)
 
 A set of safe Least-Recently-Used (LRU) cache types aimed at providing flexible
 map-like structures that automatically evict the least recently used key and
@@ -13,13 +13,11 @@ value when its capacity is reached.
 
 ## Safety
 
-This crate includes `#![forbid(unsafe)]`. To implement the `LruHashMap` and
-`LruBTreeMap` types, each entry's `Key` type is stored twice, which requires the
+This crate includes `#![forbid(unsafe)]`. To implement the [`LruHashMap`][lruhashmap] and
+[`LruBTreeMap`][lrubtreemap] types, each entry's `Key` type is stored twice, which requires the
 `Key` type to implement `Clone`. If the `Key` type is expensive to clone,
 consider wrapping it in an `Rc` or `Arc`, or consider an LRU implementation that
 uses `unsafe` to avoid this requirement.
-
-The base `LruMap` does not require `Key` to implement `Clone`.
 
 ## LRU Implementation
 

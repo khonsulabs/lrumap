@@ -4,13 +4,11 @@ value when its capacity is reached.
 
 ## Safety
 
-This crate includes `#![forbid(unsafe)]`. To implement the `LruHashMap` and
-`LruBTreeMap` types, each entry's `Key` type is stored twice, which requires the
+This crate includes `#![forbid(unsafe)]`. To implement the [`LruHashMap`][lruhashmap] and
+[`LruBTreeMap`][lrubtreemap] types, each entry's `Key` type is stored twice, which requires the
 `Key` type to implement `Clone`. If the `Key` type is expensive to clone,
 consider wrapping it in an `Rc` or `Arc`, or consider an LRU implementation that
 uses `unsafe` to avoid this requirement.
-
-The base `LruMap` does not require `Key` to implement `Clone`.
 
 ## LRU Implementation
 
@@ -82,6 +80,6 @@ seemed to offer this functionality.
 [nebari]: https://github.com/khonsulabs/nebari
 [ecton]: https://github.com/ecton
 [most-recent-in-range]: https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruBTreeMap.html#method.most_recent_in_range
-[lruhashmap]: https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruHashMap.html
-[lrubtreemap]: https://khonsulabs.github.io/lrumap/main/lrumap/struct.LruBTreeMap.html
+[lruhashmap]: $lruhashmap$
+[lrubtreemap]: $lrubtreemap$
 [hashbrown]: https://docs.rs/hashbrown/latest/hashbrown/
